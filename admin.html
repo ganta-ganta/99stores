@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Admin Panel - Ganta Solutions</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100">
+  <div id="app" class="p-4"></div>
+
+  <!-- Firebase & App Script -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
+    import {
+      getAuth,
+      signInWithEmailAndPassword,
+      onAuthStateChanged,
+      signOut
+    } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
+
+    // Firebase config
+    const firebaseConfig = {
+      apiKey: "AIzaSyCtENzgbo12j2fHfraERzFq6LjLisdA2T8",
+      authDomain: "store-d7663.firebaseapp.com",
+      projectId: "store-d7663",
+      storageBucket: "store-d7663.appspot.com",
+      messagingSenderId: "45645072994",
+      appId: "1:45645072994:web:87bf34dff97cdedc67df3b",
+      measurementId: "G-ESDEZ9YKV1"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+
+    const appDiv = document.getElementById("app");
+
+    let products = [
+      { id: "p1", name: "Laptop", description: "High performance", price: 75000 },
+    ];
+    let orders = [
+      { id: "o1", userName: "John", total: 1500, status: "processing" },
+    ];
+
+    function renderLogin(error = "") {
+      appDiv.innerHTML = `
+        <div class="min-h-screen flex items-center justify-center">
+          <form class="bg-white p-6 rounded shadow-md w-full max-w-sm" id="loginForm">
+            <h2 class="text-xl font-bold mb-4 text-center">Admin Login</h2>
+            ${error ? `<p class="text-red-600 text-sm mb-2">${error}</p>` : ""}
+            <input type="email" placeholder="Email" name="email" required class="w-full p-2 mb-3 border rounded" />
+            <input type="password" placeholder="Password" name="password" required class="w-full p-2 mb-3 border rounded" />
+            <button type="submit" class="w-full bg-indigo-600 text-white p-2 rounded hover:bg-indigo-700">Login</button>
+          </form>
+        </div>
+      `;
+
+      document.getElementById("loginForm").onsubmit = async (e) => {
+        e.preventDefault();
+        const email = e.target.email.value;
+        const password = e.target.password.value;
+
+        try {
+          const res = await signInWithEmailAndPassword(auth, email, password);
+          if (res.user.email === "admin@gantasolutions.com") {
+            renderDashboard();
+          } else {
+            await signOut(auth);
+            renderLogin("Access denied: Only admin@gantasolutions.com allowed.");
+          }
+        } catch (err) {
+          renderLogin("Login failed: " + err.message);
+        }
+      };
+    }
+
+    function renderDashboard() {
+      appDiv.innerHTML = `
+        <div class="max-w-5xl mx-auto">
+          <div class="flex justify-between items-center mb-6">
+            <h1 class="text-2xl font-bold">Admin Dashboard</h1>
+            <button id="logoutBtn" class="bg-red-500 text-white px-4 py-2 rounded">Logout</button>
+          </div>
+          
+          <div class="mb-4">
+            <h2 class="text-lg font-semibold mb-2">Products</h2>
+            <ul id="productList" class="space-y-2 mb-4"></ul>
+            <button id="addProductBtn" class="bg-green-600 text-white px-3 py-2 rounded">Add Demo Product</button>
+          </div>
+
+          <div>
+            <h2 class="text-lg font-semibold mb-2">Orders</h2>
+            <ul id="orderList" class="space-y-2"></ul>
+          </div>
+        </div>
+      `;
+
+      document.getElementById("logoutBtn").onclick = () => signOut(auth);
+      document.getElementById("addProductBtn").onclick = () => {
+        const newProduct = {
+          id: "p" + Date.now(),
+          name: "New Product",
+          description: "Auto added",
+          price: 999
+        };
+        products.push(newProduct);
+        updateProductList();
+      };
+
+      updateProductList();
+      updateOrderList();
+    }
+
+    function updateProductList() {
+      const productList = document.getElementById("productList");
+      productList.innerHTML = products.map(p => `
+        <li class="bg-white p-3 rounded shadow flex justify-between items-center">
+          <div>
+            <p class="font-bold">${p.name}</p>
+            <p class="text-sm text-gray-500">${p.description}</p>
+          </div>
+          <span>₹${p.price}</span>
+        </li>
+      `).join("");
+    }
+
+    function updateOrderList() {
+      const orderList = document.getElementById("orderList");
+      orderList.innerHTML = orders.map(o => `
+        <li class="bg-white p-3 rounded shadow flex justify-between items-center">
+          <div>
+            <p class="font-bold">Order #${o.id}</p>
+            <p class="text-sm text-gray-500">${o.userName}</p>
+          </div>
+          <span class="text-sm">₹${o.total} - <span class="capitalize">${o.status}</span></span>
+        </li>
+      `).join("");
+    }
+
+    // Auth check
+    onAuthStateChanged(auth, (user) => {
+      if (user?.email === "admin@gantasolutions.com") {
+        renderDashboard();
+      } else {
+        renderLogin();
+      }
+    });
+  </script>
+</body>
+</html>
