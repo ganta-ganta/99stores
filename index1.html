@@ -1,0 +1,1373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guntur99Store - Your Trusted Online Shopping Destination</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    <style>
+        .hero-gradient {
+            background: linear-gradient(135deg, #2563eb 0%, #7c3aed 100%);
+        }
+        .product-card:hover img {
+            transform: scale(1.05);
+        }
+        .product-card img {
+            transition: transform 0.3s ease;
+        }
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .cart-badge {
+            animation: bounce 0.3s ease;
+        }
+        @keyframes bounce {
+            0%, 20%, 60%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-10px); }
+            80% { transform: translateY(-5px); }
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Header -->
+    <header class="bg-white shadow-md sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <!-- Logo -->
+                <div class="flex items-center space-x-2 cursor-pointer" onclick="showPage('home')">
+                    <div class="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
+                        <span class="text-white font-bold text-sm">G99</span>
+                    </div>
+                    <span class="text-xl font-bold text-gray-900">Guntur99Store</span>
+                </div>
+
+                <!-- Search Bar -->
+                <div class="hidden md:flex flex-1 max-w-lg mx-8">
+                    <div class="relative w-full">
+                        <input
+                            type="text"
+                            id="searchInput"
+                            placeholder="Search products..."
+                            class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            onkeypress="handleSearch(event)"
+                        />
+                        <i data-lucide="search" class="absolute left-3 top-2.5 h-5 w-5 text-gray-400"></i>
+                    </div>
+                </div>
+
+                <!-- Navigation Icons -->
+                <div class="flex items-center space-x-4">
+                    <!-- Cart -->
+                    <button onclick="showPage('cart')" class="relative p-2 hover:bg-gray-100 rounded-lg transition-colors">
+                        <i data-lucide="shopping-cart" class="h-6 w-6 text-gray-700"></i>
+                        <span id="cartCount" class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center hidden">0</span>
+                    </button>
+
+                    <!-- User Menu -->
+                    <div class="relative">
+                        <button id="userMenuBtn" onclick="toggleUserMenu()" class="flex items-center space-x-2 p-2 hover:bg-gray-100 rounded-lg transition-colors">
+                            <i data-lucide="user" class="h-6 w-6 text-gray-700"></i>
+                            <span id="userName" class="hidden md:block text-sm text-gray-700">Guest</span>
+                        </button>
+                        
+                        <div id="userMenu" class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border opacity-0 invisible transition-all duration-200">
+                            <div id="guestMenu">
+                                <button onclick="showPage('login')" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Login</button>
+                                <button onclick="showPage('register')" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Register</button>
+                            </div>
+                            <div id="userLoggedMenu" class="hidden">
+                                <button onclick="showPage('profile')" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Profile</button>
+                                <button onclick="showPage('orders')" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Orders</button>
+                                <button onclick="showPage('wishlist')" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Wishlist</button>
+                                <button onclick="logout()" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Logout</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Mobile Menu Button -->
+                    <button onclick="toggleMobileMenu()" class="md:hidden p-2 hover:bg-gray-100 rounded-lg">
+                        <i data-lucide="menu" class="h-6 w-6"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Mobile Menu -->
+            <div id="mobileMenu" class="md:hidden border-t py-4 hidden">
+                <div class="mb-4">
+                    <div class="relative">
+                        <input
+                            type="text"
+                            placeholder="Search products..."
+                            class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        />
+                        <i data-lucide="search" class="absolute left-3 top-2.5 h-5 w-5 text-gray-400"></i>
+                    </div>
+                </div>
+                
+                <div class="space-y-2">
+                    <button onclick="showPage('categories')" class="block w-full text-left py-2 text-gray-700 hover:text-blue-600">Categories</button>
+                    <button onclick="showPage('deals')" class="block w-full text-left py-2 text-gray-700 hover:text-blue-600">Deals</button>
+                    <button onclick="showPage('about')" class="block w-full text-left py-2 text-gray-700 hover:text-blue-600">About</button>
+                    <button onclick="showPage('contact')" class="block w-full text-left py-2 text-gray-700 hover:text-blue-600">Contact</button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main id="mainContent" class="flex-1">
+        <!-- Home Page -->
+        <div id="homePage" class="page-content">
+            <!-- Hero Section -->
+            <section class="hero-gradient text-white">
+                <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+                    <div class="max-w-3xl mx-auto text-center">
+                        <h1 class="text-4xl md:text-6xl font-bold mb-6">
+                            Welcome to Guntur99Store
+                        </h1>
+                        <p class="text-xl md:text-2xl mb-8 text-blue-100">
+                            Discover amazing products at unbeatable prices
+                        </p>
+                        <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                            <button onclick="showPage('search')" class="bg-white text-blue-600 px-8 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-colors flex items-center justify-center space-x-2">
+                                <i data-lucide="shopping-bag" class="h-5 w-5"></i>
+                                <span>Shop Now</span>
+                            </button>
+                            <button onclick="showPage('categories')" class="border-2 border-white text-white px-8 py-3 rounded-lg font-semibold hover:bg-white hover:text-blue-600 transition-colors flex items-center justify-center space-x-2">
+                                <span>Browse Categories</span>
+                                <i data-lucide="arrow-right" class="h-5 w-5"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Features Section -->
+            <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                    <div class="text-center">
+                        <div class="bg-blue-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <i data-lucide="shopping-bag" class="h-8 w-8 text-blue-600"></i>
+                        </div>
+                        <h3 class="text-lg font-semibold mb-2">Free Shipping</h3>
+                        <p class="text-gray-600">Free shipping on orders over ₹999</p>
+                    </div>
+                    <div class="text-center">
+                        <div class="bg-green-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <i data-lucide="shield" class="h-8 w-8 text-green-600"></i>
+                        </div>
+                        <h3 class="text-lg font-semibold mb-2">Secure Payment</h3>
+                        <p class="text-gray-600">100% secure payment processing</p>
+                    </div>
+                    <div class="text-center">
+                        <div class="bg-purple-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <i data-lucide="users" class="h-8 w-8 text-purple-600"></i>
+                        </div>
+                        <h3 class="text-lg font-semibold mb-2">24/7 Support</h3>
+                        <p class="text-gray-600">Round-the-clock customer support</p>
+                    </div>
+                    <div class="text-center">
+                        <div class="bg-orange-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <i data-lucide="star" class="h-8 w-8 text-orange-600"></i>
+                        </div>
+                        <h3 class="text-lg font-semibold mb-2">Quality Products</h3>
+                        <p class="text-gray-600">Carefully curated product selection</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Categories Section -->
+            <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+                <div class="text-center mb-12">
+                    <h2 class="text-3xl font-bold text-gray-900 mb-4">Shop by Category</h2>
+                    <p class="text-gray-600 max-w-2xl mx-auto">
+                        Explore our wide range of categories to find exactly what you're looking for
+                    </p>
+                </div>
+                <div id="categoriesGrid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
+                    <!-- Categories will be populated by JavaScript -->
+                </div>
+            </section>
+
+            <!-- Featured Products -->
+            <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+                <div class="text-center mb-12">
+                    <h2 class="text-3xl font-bold text-gray-900 mb-4">Featured Products</h2>
+                    <p class="text-gray-600 max-w-2xl mx-auto">
+                        Discover our handpicked selection of top-rated products
+                    </p>
+                </div>
+                <div id="featuredProducts" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <!-- Featured products will be populated by JavaScript -->
+                </div>
+            </section>
+
+            <!-- Newsletter -->
+            <section class="bg-gray-900 text-white">
+                <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+                    <div class="text-center">
+                        <h2 class="text-3xl font-bold mb-4">Stay Updated</h2>
+                        <p class="text-gray-300 mb-8 max-w-2xl mx-auto">
+                            Subscribe to our newsletter to get the latest deals and product updates
+                        </p>
+                        <div class="max-w-md mx-auto flex">
+                            <input
+                                type="email"
+                                placeholder="Enter your email"
+                                class="flex-1 px-4 py-3 rounded-l-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            />
+                            <button class="bg-blue-600 px-6 py-3 rounded-r-lg hover:bg-blue-700 transition-colors">
+                                Subscribe
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- Product Page -->
+        <div id="productPage" class="page-content hidden">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+                <div id="productDetails" class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <!-- Product details will be populated by JavaScript -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Cart Page -->
+        <div id="cartPage" class="page-content hidden">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+                <h1 class="text-3xl font-bold text-gray-900 mb-8">Shopping Cart</h1>
+                
+                <div id="cartEmpty" class="text-center hidden">
+                    <i data-lucide="shopping-bag" class="h-16 w-16 text-gray-400 mx-auto mb-4"></i>
+                    <h1 class="text-2xl font-bold text-gray-900 mb-2">Your cart is empty</h1>
+                    <p class="text-gray-600 mb-6">Add some products to get started</p>
+                    <button onclick="showPage('home')" class="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors">
+                        Continue Shopping
+                    </button>
+                </div>
+
+                <div id="cartContent" class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <div class="lg:col-span-2">
+                        <div id="cartItems" class="space-y-4">
+                            <!-- Cart items will be populated by JavaScript -->
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-lg shadow-md p-6 h-fit">
+                        <h2 class="text-xl font-semibold text-gray-900 mb-4">Order Summary</h2>
+                        <div class="space-y-3">
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Subtotal</span>
+                                <span id="cartSubtotal" class="font-semibold">₹0</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Shipping</span>
+                                <span class="font-semibold">Free</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Tax</span>
+                                <span id="cartTax" class="font-semibold">₹0</span>
+                            </div>
+                            <div class="border-t pt-3">
+                                <div class="flex justify-between text-lg font-bold">
+                                    <span>Total</span>
+                                    <span id="cartTotal">₹0</span>
+                                </div>
+                            </div>
+                        </div>
+                        <button onclick="showPage('checkout')" class="w-full bg-blue-600 text-white py-3 px-6 rounded-lg hover:bg-blue-700 transition-colors mt-6">
+                            Proceed to Checkout
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Login Page -->
+        <div id="loginPage" class="page-content hidden">
+            <div class="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+                <div class="max-w-md w-full space-y-8">
+                    <div>
+                        <div class="flex items-center justify-center space-x-2 mb-6">
+                            <div class="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
+                                <span class="text-white font-bold">G99</span>
+                            </div>
+                            <span class="text-2xl font-bold text-gray-900">Guntur99Store</span>
+                        </div>
+                        <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900">
+                            Sign in to your account
+                        </h2>
+                    </div>
+                    
+                    <form id="loginForm" class="mt-8 space-y-6" onsubmit="handleLogin(event)">
+                        <div id="loginError" class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg hidden"></div>
+                        
+                        <div class="space-y-4">
+                            <div>
+                                <label for="loginEmail" class="block text-sm font-medium text-gray-700">Email address</label>
+                                <div class="mt-1 relative">
+                                    <input
+                                        id="loginEmail"
+                                        type="email"
+                                        required
+                                        class="appearance-none block w-full px-3 py-2 pl-10 border border-gray-300 rounded-lg placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                        placeholder="Enter your email"
+                                    />
+                                    <i data-lucide="mail" class="absolute left-3 top-2.5 h-5 w-5 text-gray-400"></i>
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <label for="loginPassword" class="block text-sm font-medium text-gray-700">Password</label>
+                                <div class="mt-1 relative">
+                                    <input
+                                        id="loginPassword"
+                                        type="password"
+                                        required
+                                        class="appearance-none block w-full px-3 py-2 pl-10 pr-10 border border-gray-300 rounded-lg placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                        placeholder="Enter your password"
+                                    />
+                                    <i data-lucide="lock" class="absolute left-3 top-2.5 h-5 w-5 text-gray-400"></i>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center">
+                                <input id="remember-me" name="remember-me" type="checkbox" class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded" />
+                                <label for="remember-me" class="ml-2 block text-sm text-gray-900">Remember me</label>
+                            </div>
+                            <div class="text-sm">
+                                <a href="#" class="font-medium text-blue-600 hover:text-blue-500">Forgot your password?</a>
+                            </div>
+                        </div>
+
+                        <div>
+                            <button type="submit" class="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                                Sign in
+                            </button>
+                        </div>
+
+                        <div class="text-center">
+                            <span class="text-sm text-gray-600">
+                                Don't have an account? 
+                                <button type="button" onclick="showPage('register')" class="font-medium text-blue-600 hover:text-blue-500">Sign up</button>
+                            </span>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Register Page -->
+        <div id="registerPage" class="page-content hidden">
+            <div class="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+                <div class="max-w-md w-full space-y-8">
+                    <div>
+                        <div class="flex items-center justify-center space-x-2 mb-6">
+                            <div class="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
+                                <span class="text-white font-bold">G99</span>
+                            </div>
+                            <span class="text-2xl font-bold text-gray-900">Guntur99Store</span>
+                        </div>
+                        <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900">
+                            Create your account
+                        </h2>
+                    </div>
+                    
+                    <form id="registerForm" class="mt-8 space-y-6" onsubmit="handleRegister(event)">
+                        <div id="registerError" class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg hidden"></div>
+                        
+                        <div class="space-y-4">
+                            <div>
+                                <label for="registerName" class="block text-sm font-medium text-gray-700">Full Name</label>
+                                <div class="mt-1 relative">
+                                    <input
+                                        id="registerName"
+                                        type="text"
+                                        required
+                                        class="appearance-none block w-full px-3 py-2 pl-10 border border-gray-300 rounded-lg placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                        placeholder="Enter your full name"
+                                    />
+                                    <i data-lucide="user" class="absolute left-3 top-2.5 h-5 w-5 text-gray-400"></i>
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <label for="registerEmail" class="block text-sm font-medium text-gray-700">Email address</label>
+                                <div class="mt-1 relative">
+                                    <input
+                                        id="registerEmail"
+                                        type="email"
+                                        required
+                                        class="appearance-none block w-full px-3 py-2 pl-10 border border-gray-300 rounded-lg placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                        placeholder="Enter your email"
+                                    />
+                                    <i data-lucide="mail" class="absolute left-3 top-2.5 h-5 w-5 text-gray-400"></i>
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <label for="registerPassword" class="block text-sm font-medium text-gray-700">Password</label>
+                                <div class="mt-1 relative">
+                                    <input
+                                        id="registerPassword"
+                                        type="password"
+                                        required
+                                        class="appearance-none block w-full px-3 py-2 pl-10 border border-gray-300 rounded-lg placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                        placeholder="Enter your password"
+                                    />
+                                    <i data-lucide="lock" class="absolute left-3 top-2.5 h-5 w-5 text-gray-400"></i>
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <label for="registerConfirmPassword" class="block text-sm font-medium text-gray-700">Confirm Password</label>
+                                <div class="mt-1 relative">
+                                    <input
+                                        id="registerConfirmPassword"
+                                        type="password"
+                                        required
+                                        class="appearance-none block w-full px-3 py-2 pl-10 border border-gray-300 rounded-lg placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                        placeholder="Confirm your password"
+                                    />
+                                    <i data-lucide="lock" class="absolute left-3 top-2.5 h-5 w-5 text-gray-400"></i>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <button type="submit" class="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                                Create account
+                            </button>
+                        </div>
+
+                        <div class="text-center">
+                            <span class="text-sm text-gray-600">
+                                Already have an account? 
+                                <button type="button" onclick="showPage('login')" class="font-medium text-blue-600 hover:text-blue-500">Sign in</button>
+                            </span>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Profile Page -->
+        <div id="profilePage" class="page-content hidden">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                    <!-- Sidebar -->
+                    <div class="md:col-span-1">
+                        <div class="bg-white rounded-lg shadow-md p-6">
+                            <div class="text-center mb-6">
+                                <div id="userAvatar" class="w-20 h-20 bg-blue-600 rounded-full mx-auto flex items-center justify-center text-white text-2xl font-bold">
+                                    U
+                                </div>
+                                <h3 id="profileUserName" class="mt-2 text-lg font-semibold">User Name</h3>
+                                <p id="profileUserEmail" class="text-gray-600">user@example.com</p>
+                            </div>
+                            <nav class="space-y-2">
+                                <button onclick="showProfileTab('profile')" class="profile-tab w-full flex items-center space-x-3 px-4 py-2 rounded-lg transition-colors bg-blue-600 text-white">
+                                    <i data-lucide="user" class="h-5 w-5"></i>
+                                    <span>Profile</span>
+                                </button>
+                                <button onclick="showProfileTab('orders')" class="profile-tab w-full flex items-center space-x-3 px-4 py-2 rounded-lg transition-colors text-gray-700 hover:bg-gray-100">
+                                    <i data-lucide="package" class="h-5 w-5"></i>
+                                    <span>Orders</span>
+                                </button>
+                                <button onclick="showProfileTab('wishlist')" class="profile-tab w-full flex items-center space-x-3 px-4 py-2 rounded-lg transition-colors text-gray-700 hover:bg-gray-100">
+                                    <i data-lucide="heart" class="h-5 w-5"></i>
+                                    <span>Wishlist</span>
+                                </button>
+                                <button onclick="showProfileTab('addresses')" class="profile-tab w-full flex items-center space-x-3 px-4 py-2 rounded-lg transition-colors text-gray-700 hover:bg-gray-100">
+                                    <i data-lucide="map-pin" class="h-5 w-5"></i>
+                                    <span>Addresses</span>
+                                </button>
+                            </nav>
+                        </div>
+                    </div>
+
+                    <!-- Main Content -->
+                    <div class="md:col-span-3">
+                        <div class="bg-white rounded-lg shadow-md p-6">
+                            <div id="profileTabContent">
+                                <!-- Profile tab content will be populated by JavaScript -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                <!-- Company Info -->
+                <div>
+                    <div class="flex items-center space-x-2 mb-4">
+                        <div class="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
+                            <span class="text-white font-bold text-sm">G99</span>
+                        </div>
+                        <span class="text-xl font-bold">Guntur99Store</span>
+                    </div>
+                    <p class="text-gray-400 mb-4">
+                        Your trusted online shopping destination for electronics, clothing, and more.
+                    </p>
+                    <div class="flex space-x-4">
+                        <a href="#" class="text-gray-400 hover:text-blue-400 transition-colors">
+                            <i data-lucide="facebook" class="h-5 w-5"></i>
+                        </a>
+                        <a href="#" class="text-gray-400 hover:text-blue-400 transition-colors">
+                            <i data-lucide="twitter" class="h-5 w-5"></i>
+                        </a>
+                        <a href="#" class="text-gray-400 hover:text-blue-400 transition-colors">
+                            <i data-lucide="instagram" class="h-5 w-5"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Quick Links -->
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">Quick Links</h3>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">About Us</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">Contact Us</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">Careers</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">Blog</a></li>
+                    </ul>
+                </div>
+
+                <!-- Customer Service -->
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">Customer Service</h3>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">Help Center</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">Returns & Exchanges</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">Shipping Info</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">Track Your Order</a></li>
+                    </ul>
+                </div>
+
+                <!-- Contact Info -->
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">Contact Info</h3>
+                    <div class="space-y-3">
+                        <div class="flex items-center space-x-3">
+                            <i data-lucide="map-pin" class="h-5 w-5 text-gray-400"></i>
+                            <span class="text-gray-400">123 Commerce Street, City, State 12345</span>
+                        </div>
+                        <div class="flex items-center space-x-3">
+                            <i data-lucide="phone" class="h-5 w-5 text-gray-400"></i>
+                            <span class="text-gray-400">+1 (555) 123-4567</span>
+                        </div>
+                        <div class="flex items-center space-x-3">
+                            <i data-lucide="mail" class="h-5 w-5 text-gray-400"></i>
+                            <span class="text-gray-400">support@guntur99store.com</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="border-t border-gray-800 mt-8 pt-8 text-center">
+                <p class="text-gray-400">
+                    © 2024 Guntur99Store. All rights reserved. | 
+                    <a href="#" class="hover:text-white transition-colors ml-1">Privacy Policy</a> | 
+                    <a href="#" class="hover:text-white transition-colors ml-1">Terms of Service</a>
+                </p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Sample data
+        const sampleProducts = [
+            {
+                id: '1',
+                name: 'Wireless Bluetooth Headphones',
+                price: 2999,
+                originalPrice: 3999,
+                image: 'https://images.pexels.com/photos/3587478/pexels-photo-3587478.jpeg?auto=compress&cs=tinysrgb&w=500',
+                images: [
+                    'https://images.pexels.com/photos/3587478/pexels-photo-3587478.jpeg?auto=compress&cs=tinysrgb&w=500',
+                    'https://images.pexels.com/photos/1649771/pexels-photo-1649771.jpeg?auto=compress&cs=tinysrgb&w=500'
+                ],
+                category: 'Electronics',
+                description: 'High-quality wireless Bluetooth headphones with noise cancellation and 30-hour battery life.',
+                rating: 4.5,
+                reviewCount: 128,
+                inStock: true,
+                featured: true,
+                tags: ['wireless', 'bluetooth', 'headphones', 'audio']
+            },
+            {
+                id: '2',
+                name: 'Smart Watch Series 7',
+                price: 15999,
+                originalPrice: 19999,
+                image: 'https://images.pexels.com/photos/393047/pexels-photo-393047.jpeg?auto=compress&cs=tinysrgb&w=500',
+                images: [
+                    'https://images.pexels.com/photos/393047/pexels-photo-393047.jpeg?auto=compress&cs=tinysrgb&w=500',
+                    'https://images.pexels.com/photos/1432794/pexels-photo-1432794.jpeg?auto=compress&cs=tinysrgb&w=500'
+                ],
+                category: 'Electronics',
+                description: 'Advanced smartwatch with health monitoring, GPS, and 5-day battery life.',
+                rating: 4.7,
+                reviewCount: 89,
+                inStock: true,
+                featured: true,
+                tags: ['smartwatch', 'fitness', 'health', 'gps']
+            },
+            {
+                id: '3',
+                name: 'Casual Cotton T-Shirt',
+                price: 899,
+                originalPrice: 1299,
+                image: 'https://images.pexels.com/photos/1183266/pexels-photo-1183266.jpeg?auto=compress&cs=tinysrgb&w=500',
+                images: [
+                    'https://images.pexels.com/photos/1183266/pexels-photo-1183266.jpeg?auto=compress&cs=tinysrgb&w=500',
+                    'https://images.pexels.com/photos/1040945/pexels-photo-1040945.jpeg?auto=compress&cs=tinysrgb&w=500'
+                ],
+                category: 'Clothing',
+                description: 'Comfortable 100% cotton t-shirt available in multiple colors and sizes.',
+                rating: 4.2,
+                reviewCount: 45,
+                inStock: true,
+                featured: false,
+                tags: ['tshirt', 'cotton', 'casual', 'clothing']
+            },
+            {
+                id: '4',
+                name: 'Coffee Maker Deluxe',
+                price: 8999,
+                originalPrice: 12999,
+                image: 'https://images.pexels.com/photos/324028/pexels-photo-324028.jpeg?auto=compress&cs=tinysrgb&w=500',
+                images: [
+                    'https://images.pexels.com/photos/324028/pexels-photo-324028.jpeg?auto=compress&cs=tinysrgb&w=500',
+                    'https://images.pexels.com/photos/2396220/pexels-photo-2396220.jpeg?auto=compress&cs=tinysrgb&w=500'
+                ],
+                category: 'Home & Kitchen',
+                description: 'Premium coffee maker with programmable brewing and thermal carafe.',
+                rating: 4.6,
+                reviewCount: 67,
+                inStock: true,
+                featured: true,
+                tags: ['coffee', 'maker', 'kitchen', 'brewing']
+            },
+            {
+                id: '5',
+                name: 'Ergonomic Office Chair',
+                price: 12999,
+                originalPrice: 16999,
+                image: 'https://images.pexels.com/photos/1957477/pexels-photo-1957477.jpeg?auto=compress&cs=tinysrgb&w=500',
+                images: [
+                    'https://images.pexels.com/photos/1957477/pexels-photo-1957477.jpeg?auto=compress&cs=tinysrgb&w=500',
+                    'https://images.pexels.com/photos/3316924/pexels-photo-3316924.jpeg?auto=compress&cs=tinysrgb&w=500'
+                ],
+                category: 'Furniture',
+                description: 'Professional ergonomic office chair with lumbar support and adjustable height.',
+                rating: 4.8,
+                reviewCount: 92,
+                inStock: true,
+                featured: false,
+                tags: ['office', 'chair', 'ergonomic', 'furniture']
+            },
+            {
+                id: '6',
+                name: 'Gaming Mechanical Keyboard',
+                price: 4999,
+                originalPrice: 6999,
+                image: 'https://images.pexels.com/photos/1194713/pexels-photo-1194713.jpeg?auto=compress&cs=tinysrgb&w=500',
+                images: [
+                    'https://images.pexels.com/photos/1194713/pexels-photo-1194713.jpeg?auto=compress&cs=tinysrgb&w=500',
+                    'https://images.pexels.com/photos/2115256/pexels-photo-2115256.jpeg?auto=compress&cs=tinysrgb&w=500'
+                ],
+                category: 'Electronics',
+                description: 'RGB mechanical gaming keyboard with blue switches and customizable backlighting.',
+                rating: 4.4,
+                reviewCount: 156,
+                inStock: true,
+                featured: true,
+                tags: ['gaming', 'keyboard', 'mechanical', 'rgb']
+            }
+        ];
+
+        const sampleCategories = [
+            {
+                id: '1',
+                name: 'Electronics',
+                image: 'https://images.pexels.com/photos/356056/pexels-photo-356056.jpeg?auto=compress&cs=tinysrgb&w=400',
+                productCount: 245
+            },
+            {
+                id: '2',
+                name: 'Clothing',
+                image: 'https://images.pexels.com/photos/996329/pexels-photo-996329.jpeg?auto=compress&cs=tinysrgb&w=400',
+                productCount: 189
+            },
+            {
+                id: '3',
+                name: 'Home & Kitchen',
+                image: 'https://images.pexels.com/photos/1080721/pexels-photo-1080721.jpeg?auto=compress&cs=tinysrgb&w=400',
+                productCount: 156
+            },
+            {
+                id: '4',
+                name: 'Sports & Fitness',
+                image: 'https://images.pexels.com/photos/1552242/pexels-photo-1552242.jpeg?auto=compress&cs=tinysrgb&w=400',
+                productCount: 98
+            },
+            {
+                id: '5',
+                name: 'Books',
+                image: 'https://images.pexels.com/photos/1029141/pexels-photo-1029141.jpeg?auto=compress&cs=tinysrgb&w=400',
+                productCount: 67
+            },
+            {
+                id: '6',
+                name: 'Furniture',
+                image: 'https://images.pexels.com/photos/1350789/pexels-photo-1350789.jpeg?auto=compress&cs=tinysrgb&w=400',
+                productCount: 134
+            }
+        ];
+
+        // Global state
+        let currentUser = null;
+        let cart = JSON.parse(localStorage.getItem('guntur99_cart') || '[]');
+        let currentPage = 'home';
+        let currentProduct = null;
+
+        // Initialize the app
+        document.addEventListener('DOMContentLoaded', function() {
+            lucide.createIcons();
+            loadUserFromStorage();
+            updateCartUI();
+            loadHomePage();
+        });
+
+        // Page navigation
+        function showPage(page) {
+            // Hide all pages
+            document.querySelectorAll('.page-content').forEach(el => el.classList.add('hidden'));
+            
+            // Show selected page
+            const pageElement = document.getElementById(page + 'Page');
+            if (pageElement) {
+                pageElement.classList.remove('hidden');
+                currentPage = page;
+                
+                // Load page-specific content
+                switch(page) {
+                    case 'home':
+                        loadHomePage();
+                        break;
+                    case 'cart':
+                        loadCartPage();
+                        break;
+                    case 'profile':
+                        if (!currentUser) {
+                            showPage('login');
+                            return;
+                        }
+                        loadProfilePage();
+                        break;
+                }
+            }
+        }
+
+        // Load home page content
+        function loadHomePage() {
+            loadCategories();
+            loadFeaturedProducts();
+        }
+
+        // Load categories
+        function loadCategories() {
+            const categoriesGrid = document.getElementById('categoriesGrid');
+            categoriesGrid.innerHTML = sampleCategories.map(category => `
+                <div class="group cursor-pointer" onclick="showCategoryProducts('${category.id}')">
+                    <div class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300">
+                        <div class="relative overflow-hidden">
+                            <img
+                                src="${category.image}"
+                                alt="${category.name}"
+                                class="w-full h-32 object-cover group-hover:scale-105 transition-transform duration-300"
+                            />
+                            <div class="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center">
+                                <div class="text-center text-white">
+                                    <h3 class="text-xl font-bold mb-1">${category.name}</h3>
+                                    <p class="text-sm">${category.productCount} products</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Load featured products
+        function loadFeaturedProducts() {
+            const featuredProducts = document.getElementById('featuredProducts');
+            const featured = sampleProducts.filter(p => p.featured);
+            featuredProducts.innerHTML = featured.map(product => createProductCard(product)).join('');
+        }
+
+        // Create product card HTML
+        function createProductCard(product) {
+            const discountPercent = product.originalPrice ? 
+                Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100) : 0;
+            
+            return `
+                <div class="product-card bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300 group">
+                    <div class="relative overflow-hidden cursor-pointer" onclick="showProduct('${product.id}')">
+                        <img
+                            src="${product.image}"
+                            alt="${product.name}"
+                            class="w-full h-48 object-cover"
+                        />
+                        ${product.originalPrice ? `
+                            <div class="absolute top-2 left-2 bg-red-500 text-white px-2 py-1 text-xs rounded">
+                                ${discountPercent}% OFF
+                            </div>
+                        ` : ''}
+                        <button class="absolute top-2 right-2 p-2 bg-white rounded-full shadow-md hover:bg-gray-50 transition-colors opacity-0 group-hover:opacity-100">
+                            <i data-lucide="heart" class="h-4 w-4 text-gray-600"></i>
+                        </button>
+                    </div>
+                    
+                    <div class="p-4">
+                        <h3 class="text-lg font-semibold text-gray-900 mb-2 hover:text-blue-600 transition-colors cursor-pointer" onclick="showProduct('${product.id}')">
+                            ${product.name}
+                        </h3>
+                        
+                        <div class="flex items-center mb-2">
+                            <div class="flex items-center">
+                                ${[...Array(5)].map((_, i) => `
+                                    <i data-lucide="star" class="h-4 w-4 ${
+                                        i < Math.floor(product.rating) 
+                                            ? 'text-yellow-400 fill-current' 
+                                            : 'text-gray-300'
+                                    }"></i>
+                                `).join('')}
+                            </div>
+                            <span class="text-sm text-gray-600 ml-2">(${product.reviewCount})</span>
+                        </div>
+                        
+                        <div class="flex items-center justify-between mb-3">
+                            <div class="flex items-center space-x-2">
+                                <span class="text-xl font-bold text-gray-900">₹${product.price}</span>
+                                ${product.originalPrice ? `
+                                    <span class="text-sm text-gray-500 line-through">₹${product.originalPrice}</span>
+                                ` : ''}
+                            </div>
+                            <span class="text-sm ${product.inStock ? 'text-green-600' : 'text-red-600'}">
+                                ${product.inStock ? 'In Stock' : 'Out of Stock'}
+                            </span>
+                        </div>
+                        
+                        <button
+                            onclick="addToCart('${product.id}')"
+                            ${!product.inStock ? 'disabled' : ''}
+                            class="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors flex items-center justify-center space-x-2"
+                        >
+                            <i data-lucide="shopping-cart" class="h-4 w-4"></i>
+                            <span>Add to Cart</span>
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Show product details
+        function showProduct(productId) {
+            const product = sampleProducts.find(p => p.id === productId);
+            if (!product) return;
+            
+            currentProduct = product;
+            
+            const productDetails = document.getElementById('productDetails');
+            productDetails.innerHTML = `
+                <div class="space-y-4">
+                    <div class="aspect-square bg-gray-100 rounded-lg overflow-hidden">
+                        <img
+                            src="${product.images[0]}"
+                            alt="${product.name}"
+                            class="w-full h-full object-cover"
+                        />
+                    </div>
+                    <div class="flex space-x-2">
+                        ${product.images.map((image, index) => `
+                            <button
+                                onclick="changeProductImage('${image}')"
+                                class="w-16 h-16 rounded-lg overflow-hidden border-2 border-gray-200"
+                            >
+                                <img
+                                    src="${image}"
+                                    alt="${product.name} ${index + 1}"
+                                    class="w-full h-full object-cover"
+                                />
+                            </button>
+                        `).join('')}
+                    </div>
+                </div>
+
+                <div class="space-y-6">
+                    <div>
+                        <h1 class="text-3xl font-bold text-gray-900 mb-2">${product.name}</h1>
+                        <div class="flex items-center space-x-4 mb-4">
+                            <div class="flex items-center">
+                                ${[...Array(5)].map((_, i) => `
+                                    <i data-lucide="star" class="h-5 w-5 ${
+                                        i < Math.floor(product.rating)
+                                            ? 'text-yellow-400 fill-current'
+                                            : 'text-gray-300'
+                                    }"></i>
+                                `).join('')}
+                            </div>
+                            <span class="text-gray-600">(${product.reviewCount} reviews)</span>
+                        </div>
+                        <div class="flex items-center space-x-4 mb-4">
+                            <span class="text-3xl font-bold text-gray-900">₹${product.price}</span>
+                            ${product.originalPrice ? `
+                                <span class="text-xl text-gray-500 line-through">₹${product.originalPrice}</span>
+                            ` : ''}
+                        </div>
+                        <p class="text-gray-600 mb-6">${product.description}</p>
+                    </div>
+
+                    <div class="space-y-4">
+                        <div class="flex items-center space-x-4">
+                            <span class="text-sm font-medium text-gray-700">Quantity:</span>
+                            <div class="flex items-center border border-gray-300 rounded-lg">
+                                <button onclick="changeQuantity(-1)" class="p-2 hover:bg-gray-100 transition-colors">
+                                    <i data-lucide="minus" class="h-4 w-4"></i>
+                                </button>
+                                <span id="productQuantity" class="px-4 py-2 font-medium">1</span>
+                                <button onclick="changeQuantity(1)" class="p-2 hover:bg-gray-100 transition-colors">
+                                    <i data-lucide="plus" class="h-4 w-4"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="flex space-x-4">
+                            <button
+                                onclick="addToCartFromProduct()"
+                                ${!product.inStock ? 'disabled' : ''}
+                                class="flex-1 bg-blue-600 text-white py-3 px-6 rounded-lg hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors flex items-center justify-center space-x-2"
+                            >
+                                <i data-lucide="shopping-cart" class="h-5 w-5"></i>
+                                <span>Add to Cart</span>
+                            </button>
+                            <button class="px-6 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
+                                <i data-lucide="heart" class="h-5 w-5"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="border-t pt-6">
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div class="flex items-center space-x-2">
+                                <i data-lucide="truck" class="h-5 w-5 text-green-600"></i>
+                                <span class="text-sm text-gray-600">Free Shipping</span>
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <i data-lucide="shield" class="h-5 w-5 text-blue-600"></i>
+                                <span class="text-sm text-gray-600">Secure Payment</span>
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <i data-lucide="rotate-ccw" class="h-5 w-5 text-purple-600"></i>
+                                <span class="text-sm text-gray-600">Easy Returns</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            showPage('product');
+            lucide.createIcons();
+        }
+
+        // Change product image
+        function changeProductImage(imageSrc) {
+            const mainImage = document.querySelector('#productDetails img');
+            if (mainImage) {
+                mainImage.src = imageSrc;
+            }
+        }
+
+        // Change quantity
+        let productQuantity = 1;
+        function changeQuantity(change) {
+            productQuantity = Math.max(1, productQuantity + change);
+            document.getElementById('productQuantity').textContent = productQuantity;
+        }
+
+        // Add to cart from product page
+        function addToCartFromProduct() {
+            if (currentProduct) {
+                addToCart(currentProduct.id, productQuantity);
+            }
+        }
+
+        // Add to cart
+        function addToCart(productId, quantity = 1) {
+            const product = sampleProducts.find(p => p.id === productId);
+            if (!product) return;
+
+            const existingItem = cart.find(item => item.id === productId);
+            
+            if (existingItem) {
+                existingItem.quantity += quantity;
+            } else {
+                cart.push({
+                    id: productId,
+                    product: product,
+                    quantity: quantity
+                });
+            }
+            
+            localStorage.setItem('guntur99_cart', JSON.stringify(cart));
+            updateCartUI();
+            
+            // Show cart badge animation
+            const cartBadge = document.getElementById('cartCount');
+            cartBadge.classList.add('cart-badge');
+            setTimeout(() => cartBadge.classList.remove('cart-badge'), 300);
+        }
+
+        // Update cart UI
+        function updateCartUI() {
+            const cartCount = cart.reduce((total, item) => total + item.quantity, 0);
+            const cartCountElement = document.getElementById('cartCount');
+            
+            if (cartCount > 0) {
+                cartCountElement.textContent = cartCount;
+                cartCountElement.classList.remove('hidden');
+            } else {
+                cartCountElement.classList.add('hidden');
+            }
+        }
+
+        // Load cart page
+        function loadCartPage() {
+            const cartEmpty = document.getElementById('cartEmpty');
+            const cartContent = document.getElementById('cartContent');
+            
+            if (cart.length === 0) {
+                cartEmpty.classList.remove('hidden');
+                cartContent.classList.add('hidden');
+            } else {
+                cartEmpty.classList.add('hidden');
+                cartContent.classList.remove('hidden');
+                
+                const cartItems = document.getElementById('cartItems');
+                cartItems.innerHTML = cart.map(item => `
+                    <div class="bg-white rounded-lg shadow-md p-6">
+                        <div class="flex items-center space-x-4">
+                            <img
+                                src="${item.product.image}"
+                                alt="${item.product.name}"
+                                class="w-20 h-20 object-cover rounded-lg"
+                            />
+                            <div class="flex-1">
+                                <h3 class="text-lg font-semibold text-gray-900">${item.product.name}</h3>
+                                <p class="text-gray-600">₹${item.product.price}</p>
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <button onclick="updateCartQuantity('${item.id}', ${item.quantity - 1})" class="p-1 hover:bg-gray-100 rounded">
+                                    <i data-lucide="minus" class="h-4 w-4"></i>
+                                </button>
+                                <span class="w-8 text-center">${item.quantity}</span>
+                                <button onclick="updateCartQuantity('${item.id}', ${item.quantity + 1})" class="p-1 hover:bg-gray-100 rounded">
+                                    <i data-lucide="plus" class="h-4 w-4"></i>
+                                </button>
+                            </div>
+                            <div class="text-lg font-semibold">
+                                ₹${item.product.price * item.quantity}
+                            </div>
+                            <button onclick="removeFromCart('${item.id}')" class="p-2 text-red-500 hover:bg-red-50 rounded">
+                                <i data-lucide="trash-2" class="h-5 w-5"></i>
+                            </button>
+                        </div>
+                    </div>
+                `).join('');
+                
+                updateCartTotals();
+                lucide.createIcons();
+            }
+        }
+
+        // Update cart quantity
+        function updateCartQuantity(productId, newQuantity) {
+            if (newQuantity <= 0) {
+                removeFromCart(productId);
+                return;
+            }
+            
+            const item = cart.find(item => item.id === productId);
+            if (item) {
+                item.quantity = newQuantity;
+                localStorage.setItem('guntur99_cart', JSON.stringify(cart));
+                updateCartUI();
+                loadCartPage();
+            }
+        }
+
+        // Remove from cart
+        function removeFromCart(productId) {
+            cart = cart.filter(item => item.id !== productId);
+            localStorage.setItem('guntur99_cart', JSON.stringify(cart));
+            updateCartUI();
+            loadCartPage();
+        }
+
+        // Update cart totals
+        function updateCartTotals() {
+            const subtotal = cart.reduce((total, item) => total + (item.product.price * item.quantity), 0);
+            const tax = Math.round(subtotal * 0.18);
+            const total = subtotal + tax;
+            
+            document.getElementById('cartSubtotal').textContent = `₹${subtotal}`;
+            document.getElementById('cartTax').textContent = `₹${tax}`;
+            document.getElementById('cartTotal').textContent = `₹${total}`;
+        }
+
+        // Authentication functions
+        function handleLogin(event) {
+            event.preventDefault();
+            
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+            const errorElement = document.getElementById('loginError');
+            
+            // Mock login validation
+            if (email && password) {
+                const user = {
+                    id: '1',
+                    email: email,
+                    name: email.split('@')[0],
+                    isAdmin: email === 'admin@guntur99store.com'
+                };
+                
+                currentUser = user;
+                localStorage.setItem('guntur99_user', JSON.stringify(user));
+                updateUserUI();
+                showPage('home');
+                errorElement.classList.add('hidden');
+            } else {
+                errorElement.textContent = 'Please enter valid credentials';
+                errorElement.classList.remove('hidden');
+            }
+        }
+
+        function handleRegister(event) {
+            event.preventDefault();
+            
+            const name = document.getElementById('registerName').value;
+            const email = document.getElementById('registerEmail').value;
+            const password = document.getElementById('registerPassword').value;
+            const confirmPassword = document.getElementById('registerConfirmPassword').value;
+            const errorElement = document.getElementById('registerError');
+            
+            if (password !== confirmPassword) {
+                errorElement.textContent = 'Passwords do not match';
+                errorElement.classList.remove('hidden');
+                return;
+            }
+            
+            if (password.length < 6) {
+                errorElement.textContent = 'Password must be at least 6 characters';
+                errorElement.classList.remove('hidden');
+                return;
+            }
+            
+            // Mock registration
+            const user = {
+                id: Date.now().toString(),
+                email: email,
+                name: name,
+                isAdmin: false
+            };
+            
+            currentUser = user;
+            localStorage.setItem('guntur99_user', JSON.stringify(user));
+            updateUserUI();
+            showPage('home');
+            errorElement.classList.add('hidden');
+        }
+
+        function logout() {
+            currentUser = null;
+            localStorage.removeItem('guntur99_user');
+            updateUserUI();
+            showPage('home');
+        }
+
+        function loadUserFromStorage() {
+            const savedUser = localStorage.getItem('guntur99_user');
+            if (savedUser) {
+                currentUser = JSON.parse(savedUser);
+                updateUserUI();
+            }
+        }
+
+        function updateUserUI() {
+            const userName = document.getElementById('userName');
+            const guestMenu = document.getElementById('guestMenu');
+            const userLoggedMenu = document.getElementById('userLoggedMenu');
+            
+            if (currentUser) {
+                userName.textContent = currentUser.name;
+                guestMenu.classList.add('hidden');
+                userLoggedMenu.classList.remove('hidden');
+            } else {
+                userName.textContent = 'Guest';
+                guestMenu.classList.remove('hidden');
+                userLoggedMenu.classList.add('hidden');
+            }
+        }
+
+        // Profile page functions
+        function loadProfilePage() {
+            if (!currentUser) return;
+            
+            document.getElementById('profileUserName').textContent = currentUser.name;
+            document.getElementById('profileUserEmail').textContent = currentUser.email;
+            document.getElementById('userAvatar').textContent = currentUser.name.charAt(0).toUpperCase();
+            
+            showProfileTab('profile');
+        }
+
+        function showProfileTab(tab) {
+            // Update tab buttons
+            document.querySelectorAll('.profile-tab').forEach(btn => {
+                btn.classList.remove('bg-blue-600', 'text-white');
+                btn.classList.add('text-gray-700', 'hover:bg-gray-100');
+            });
+            
+            event.target.classList.add('bg-blue-600', 'text-white');
+            event.target.classList.remove('text-gray-700', 'hover:bg-gray-100');
+            
+            const content = document.getElementById('profileTabContent');
+            
+            switch(tab) {
+                case 'profile':
+                    content.innerHTML = `
+                        <h2 class="text-2xl font-bold mb-6">Profile Information</h2>
+                        <form class="space-y-6">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Full Name</label>
+                                    <input
+                                        type="text"
+                                        value="${currentUser.name}"
+                                        class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                    />
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                                    <input
+                                        type="email"
+                                        value="${currentUser.email}"
+                                        class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                    />
+                                </div>
+                            </div>
+                            <button
+                                type="submit"
+                                class="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors"
+                            >
+                                Update Profile
+                            </button>
+                        </form>
+                    `;
+                    break;
+                case 'orders':
+                    content.innerHTML = `
+                        <h2 class="text-2xl font-bold mb-6">Order History</h2>
+                        <div class="text-center py-12">
+                            <i data-lucide="package" class="h-16 w-16 text-gray-400 mx-auto mb-4"></i>
+                            <h3 class="text-lg font-semibold text-gray-900 mb-2">No orders yet</h3>
+                            <p class="text-gray-600">Start shopping to see your orders here</p>
+                        </div>
+                    `;
+                    break;
+                case 'wishlist':
+                    content.innerHTML = `
+                        <h2 class="text-2xl font-bold mb-6">Wishlist</h2>
+                        <div class="text-center py-12">
+                            <i data-lucide="heart" class="h-16 w-16 text-gray-400 mx-auto mb-4"></i>
+                            <h3 class="text-lg font-semibold text-gray-900 mb-2">No items in wishlist</h3>
+                            <p class="text-gray-600">Save items you love for later</p>
+                        </div>
+                    `;
+                    break;
+                case 'addresses':
+                    content.innerHTML = `
+                        <div class="flex justify-between items-center mb-6">
+                            <h2 class="text-2xl font-bold">Addresses</h2>
+                            <button class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center space-x-2">
+                                <i data-lucide="plus" class="h-4 w-4"></i>
+                                <span>Add Address</span>
+                            </button>
+                        </div>
+                        <div class="text-center py-12">
+                            <i data-lucide="map-pin" class="h-16 w-16 text-gray-400 mx-auto mb-4"></i>
+                            <h3 class="text-lg font-semibold text-gray-900 mb-2">No addresses saved</h3>
+                            <p class="text-gray-600">Add an address for faster checkout</p>
+                        </div>
+                    `;
+                    break;
+            }
+            
+            lucide.createIcons();
+        }
+
+        // Utility functions
+        function toggleUserMenu() {
+            const userMenu = document.getElementById('userMenu');
+            userMenu.classList.toggle('opacity-0');
+            userMenu.classList.toggle('invisible');
+        }
+
+        function toggleMobileMenu() {
+            const mobileMenu = document.getElementById('mobileMenu');
+            mobileMenu.classList.toggle('hidden');
+        }
+
+        function handleSearch(event) {
+            if (event.key === 'Enter') {
+                const query = event.target.value;
+                if (query.trim()) {
+                    // Implement search functionality
+                    console.log('Searching for:', query);
+                }
+            }
+        }
+
+        function showCategoryProducts(categoryId) {
+            // Implement category products view
+            console.log('Show category:', categoryId);
+        }
+
+        // Close dropdowns when clicking outside
+        document.addEventListener('click', function(event) {
+            const userMenu = document.getElementById('userMenu');
+            const userMenuBtn = document.getElementById('userMenuBtn');
+            
+            if (!userMenuBtn.contains(event.target)) {
+                userMenu.classList.add('opacity-0', 'invisible');
+            }
+        });
+    </script>
+</body>
+</html>
