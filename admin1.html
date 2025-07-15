@@ -1,0 +1,959 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guntur99Store - Admin Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    <style>
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .stat-card:hover {
+            transform: translateY(-2px);
+            transition: transform 0.2s ease;
+        }
+        .tab-active {
+            border-bottom: 2px solid #2563eb;
+            color: #2563eb;
+        }
+        .modal {
+            display: none;
+        }
+        .modal.active {
+            display: flex;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Header -->
+    <header class="bg-white shadow-md">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <!-- Logo -->
+                <div class="flex items-center space-x-2">
+                    <div class="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
+                        <span class="text-white font-bold text-sm">G99</span>
+                    </div>
+                    <span class="text-xl font-bold text-gray-900">Guntur99Store Admin</span>
+                </div>
+
+                <!-- Admin Menu -->
+                <div class="flex items-center space-x-4">
+                    <button onclick="window.open('index.html', '_blank')" class="text-gray-600 hover:text-blue-600 transition-colors">
+                        <i data-lucide="external-link" class="h-5 w-5"></i>
+                        <span class="ml-1 text-sm">View Store</span>
+                    </button>
+                    
+                    <div class="relative">
+                        <button onclick="toggleAdminMenu()" class="flex items-center space-x-2 p-2 hover:bg-gray-100 rounded-lg transition-colors">
+                            <i data-lucide="user" class="h-6 w-6 text-gray-700"></i>
+                            <span id="adminName" class="text-sm text-gray-700">Admin</span>
+                        </button>
+                        
+                        <div id="adminMenu" class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border opacity-0 invisible transition-all duration-200">
+                            <button onclick="showSettings()" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Settings</button>
+                            <button onclick="adminLogout()" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Logout</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Page Header -->
+        <div class="mb-8">
+            <h1 class="text-3xl font-bold text-gray-900">Admin Dashboard</h1>
+            <p class="text-gray-600 mt-2">Manage your store from here</p>
+        </div>
+
+        <!-- Stats Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <div class="stat-card bg-white rounded-lg shadow-md p-6 cursor-pointer">
+                <div class="flex items-center">
+                    <div class="bg-blue-500 p-3 rounded-lg">
+                        <i data-lucide="package" class="h-6 w-6 text-white"></i>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm text-gray-600">Total Products</p>
+                        <p id="totalProducts" class="text-2xl font-bold text-gray-900">1,234</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="stat-card bg-white rounded-lg shadow-md p-6 cursor-pointer">
+                <div class="flex items-center">
+                    <div class="bg-green-500 p-3 rounded-lg">
+                        <i data-lucide="shopping-cart" class="h-6 w-6 text-white"></i>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm text-gray-600">Total Orders</p>
+                        <p id="totalOrders" class="text-2xl font-bold text-gray-900">567</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="stat-card bg-white rounded-lg shadow-md p-6 cursor-pointer">
+                <div class="flex items-center">
+                    <div class="bg-purple-500 p-3 rounded-lg">
+                        <i data-lucide="users" class="h-6 w-6 text-white"></i>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm text-gray-600">Total Users</p>
+                        <p id="totalUsers" class="text-2xl font-bold text-gray-900">890</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="stat-card bg-white rounded-lg shadow-md p-6 cursor-pointer">
+                <div class="flex items-center">
+                    <div class="bg-orange-500 p-3 rounded-lg">
+                        <i data-lucide="trending-up" class="h-6 w-6 text-white"></i>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm text-gray-600">Revenue</p>
+                        <p id="totalRevenue" class="text-2xl font-bold text-gray-900">₹1,23,456</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Dashboard -->
+        <div class="bg-white rounded-lg shadow-md">
+            <!-- Tabs -->
+            <div class="border-b border-gray-200">
+                <nav class="flex space-x-8 px-6">
+                    <button onclick="showTab('overview')" class="admin-tab py-4 px-1 border-b-2 font-medium text-sm tab-active">
+                        Overview
+                    </button>
+                    <button onclick="showTab('products')" class="admin-tab py-4 px-1 border-b-2 font-medium text-sm border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300">
+                        Products
+                    </button>
+                    <button onclick="showTab('orders')" class="admin-tab py-4 px-1 border-b-2 font-medium text-sm border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300">
+                        Orders
+                    </button>
+                    <button onclick="showTab('users')" class="admin-tab py-4 px-1 border-b-2 font-medium text-sm border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300">
+                        Users
+                    </button>
+                    <button onclick="showTab('analytics')" class="admin-tab py-4 px-1 border-b-2 font-medium text-sm border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300">
+                        Analytics
+                    </button>
+                    <button onclick="showTab('coupons')" class="admin-tab py-4 px-1 border-b-2 font-medium text-sm border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300">
+                        Coupons
+                    </button>
+                </nav>
+            </div>
+
+            <!-- Tab Content -->
+            <div class="p-6">
+                <!-- Overview Tab -->
+                <div id="overviewTab" class="tab-content">
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <!-- Recent Orders -->
+                        <div>
+                            <h3 class="text-lg font-semibold mb-4">Recent Orders</h3>
+                            <div id="recentOrders" class="space-y-3">
+                                <!-- Recent orders will be populated by JavaScript -->
+                            </div>
+                        </div>
+
+                        <!-- Top Products -->
+                        <div>
+                            <h3 class="text-lg font-semibold mb-4">Top Products</h3>
+                            <div id="topProducts" class="space-y-3">
+                                <!-- Top products will be populated by JavaScript -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Quick Actions -->
+                    <div class="mt-8">
+                        <h3 class="text-lg font-semibold mb-4">Quick Actions</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                            <button onclick="showAddProductModal()" class="bg-blue-600 text-white p-4 rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center space-x-2">
+                                <i data-lucide="plus" class="h-5 w-5"></i>
+                                <span>Add Product</span>
+                            </button>
+                            <button onclick="showAddCouponModal()" class="bg-green-600 text-white p-4 rounded-lg hover:bg-green-700 transition-colors flex items-center justify-center space-x-2">
+                                <i data-lucide="tag" class="h-5 w-5"></i>
+                                <span>Create Coupon</span>
+                            </button>
+                            <button onclick="exportData()" class="bg-purple-600 text-white p-4 rounded-lg hover:bg-purple-700 transition-colors flex items-center justify-center space-x-2">
+                                <i data-lucide="download" class="h-5 w-5"></i>
+                                <span>Export Data</span>
+                            </button>
+                            <button onclick="showSettings()" class="bg-gray-600 text-white p-4 rounded-lg hover:bg-gray-700 transition-colors flex items-center justify-center space-x-2">
+                                <i data-lucide="settings" class="h-5 w-5"></i>
+                                <span>Settings</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Products Tab -->
+                <div id="productsTab" class="tab-content hidden">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="text-lg font-semibold">Products Management</h3>
+                        <button onclick="showAddProductModal()" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center space-x-2">
+                            <i data-lucide="plus" class="h-4 w-4"></i>
+                            <span>Add Product</span>
+                        </button>
+                    </div>
+                    
+                    <!-- Search and Filters -->
+                    <div class="mb-6 flex flex-col md:flex-row gap-4">
+                        <div class="flex-1">
+                            <div class="relative">
+                                <i data-lucide="search" class="absolute left-3 top-2.5 h-5 w-5 text-gray-400"></i>
+                                <input
+                                    type="text"
+                                    id="productSearch"
+                                    placeholder="Search products..."
+                                    class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                    oninput="filterProducts()"
+                                />
+                            </div>
+                        </div>
+                        <select id="categoryFilter" onchange="filterProducts()" class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            <option value="">All Categories</option>
+                            <option value="Electronics">Electronics</option>
+                            <option value="Clothing">Clothing</option>
+                            <option value="Home & Kitchen">Home & Kitchen</option>
+                            <option value="Furniture">Furniture</option>
+                        </select>
+                    </div>
+
+                    <!-- Products Table -->
+                    <div class="overflow-x-auto">
+                        <table class="w-full table-auto">
+                            <thead>
+                                <tr class="bg-gray-50">
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Product</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Price</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Stock</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="productsTableBody" class="bg-white divide-y divide-gray-200">
+                                <!-- Products will be populated by JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Orders Tab -->
+                <div id="ordersTab" class="tab-content hidden">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="text-lg font-semibold">Orders Management</h3>
+                        <div class="flex space-x-2">
+                            <select id="orderStatusFilter" onchange="filterOrders()" class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                <option value="">All Orders</option>
+                                <option value="pending">Pending</option>
+                                <option value="processing">Processing</option>
+                                <option value="shipped">Shipped</option>
+                                <option value="delivered">Delivered</option>
+                                <option value="cancelled">Cancelled</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div id="ordersContent" class="text-center py-12">
+                        <i data-lucide="shopping-cart" class="h-16 w-16 text-gray-400 mx-auto mb-4"></i>
+                        <h3 class="text-lg font-semibold text-gray-900 mb-2">No orders yet</h3>
+                        <p class="text-gray-600">Orders will appear here when customers make purchases</p>
+                    </div>
+                </div>
+
+                <!-- Users Tab -->
+                <div id="usersTab" class="tab-content hidden">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="text-lg font-semibold">Users Management</h3>
+                        <div class="flex space-x-2">
+                            <button onclick="exportUsers()" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors flex items-center space-x-2">
+                                <i data-lucide="download" class="h-4 w-4"></i>
+                                <span>Export Users</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div id="usersContent" class="text-center py-12">
+                        <i data-lucide="users" class="h-16 w-16 text-gray-400 mx-auto mb-4"></i>
+                        <h3 class="text-lg font-semibold text-gray-900 mb-2">No users registered</h3>
+                        <p class="text-gray-600">User accounts will appear here</p>
+                    </div>
+                </div>
+
+                <!-- Analytics Tab -->
+                <div id="analyticsTab" class="tab-content hidden">
+                    <h3 class="text-lg font-semibold mb-6">Analytics & Reports</h3>
+                    
+                    <!-- Analytics Cards -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                        <div class="bg-gradient-to-r from-blue-500 to-blue-600 text-white p-6 rounded-lg">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-blue-100">Sales Today</p>
+                                    <p class="text-2xl font-bold">₹12,345</p>
+                                </div>
+                                <i data-lucide="trending-up" class="h-8 w-8 text-blue-200"></i>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-gradient-to-r from-green-500 to-green-600 text-white p-6 rounded-lg">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-green-100">Orders Today</p>
+                                    <p class="text-2xl font-bold">23</p>
+                                </div>
+                                <i data-lucide="shopping-bag" class="h-8 w-8 text-green-200"></i>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-gradient-to-r from-purple-500 to-purple-600 text-white p-6 rounded-lg">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-purple-100">New Users</p>
+                                    <p class="text-2xl font-bold">8</p>
+                                </div>
+                                <i data-lucide="user-plus" class="h-8 w-8 text-purple-200"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Charts Placeholder -->
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div class="bg-white border border-gray-200 rounded-lg p-6">
+                            <h4 class="text-lg font-semibold mb-4">Sales Chart</h4>
+                            <div class="h-64 bg-gray-100 rounded-lg flex items-center justify-center">
+                                <p class="text-gray-500">Sales chart will be displayed here</p>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-white border border-gray-200 rounded-lg p-6">
+                            <h4 class="text-lg font-semibold mb-4">Popular Categories</h4>
+                            <div class="h-64 bg-gray-100 rounded-lg flex items-center justify-center">
+                                <p class="text-gray-500">Category chart will be displayed here</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Coupons Tab -->
+                <div id="couponsTab" class="tab-content hidden">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="text-lg font-semibold">Coupons Management</h3>
+                        <button onclick="showAddCouponModal()" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center space-x-2">
+                            <i data-lucide="plus" class="h-4 w-4"></i>
+                            <span>Create Coupon</span>
+                        </button>
+                    </div>
+
+                    <div id="couponsContent">
+                        <div class="overflow-x-auto">
+                            <table class="w-full table-auto">
+                                <thead>
+                                    <tr class="bg-gray-50">
+                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Code</th>
+                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Discount</th>
+                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
+                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Min Amount</th>
+                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Expires</th>
+                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="couponsTableBody" class="bg-white divide-y divide-gray-200">
+                                    <!-- Coupons will be populated by JavaScript -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Add Product Modal -->
+    <div id="addProductModal" class="modal fixed inset-0 bg-black bg-opacity-50 items-center justify-center z-50">
+        <div class="bg-white rounded-lg p-6 w-full max-w-2xl mx-4 max-h-screen overflow-y-auto">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-bold">Add New Product</h2>
+                <button onclick="closeModal('addProductModal')" class="text-gray-500 hover:text-gray-700">
+                    <i data-lucide="x" class="h-6 w-6"></i>
+                </button>
+            </div>
+            
+            <form id="addProductForm" onsubmit="handleAddProduct(event)">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Product Name</label>
+                        <input type="text" id="productName" required class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Category</label>
+                        <select id="productCategory" required class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            <option value="">Select Category</option>
+                            <option value="Electronics">Electronics</option>
+                            <option value="Clothing">Clothing</option>
+                            <option value="Home & Kitchen">Home & Kitchen</option>
+                            <option value="Furniture">Furniture</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Price (₹)</label>
+                        <input type="number" id="productPrice" required class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Original Price (₹)</label>
+                        <input type="number" id="productOriginalPrice" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
+                    </div>
+                </div>
+                
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Description</label>
+                    <textarea id="productDescription" rows="3" required class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"></textarea>
+                </div>
+                
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Image URL</label>
+                    <input type="url" id="productImage" required class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                    <div>
+                        <label class="flex items-center">
+                            <input type="checkbox" id="productInStock" checked class="mr-2" />
+                            <span class="text-sm font-medium text-gray-700">In Stock</span>
+                        </label>
+                    </div>
+                    <div>
+                        <label class="flex items-center">
+                            <input type="checkbox" id="productFeatured" class="mr-2" />
+                            <span class="text-sm font-medium text-gray-700">Featured Product</span>
+                        </label>
+                    </div>
+                </div>
+                
+                <div class="flex justify-end space-x-4">
+                    <button type="button" onclick="closeModal('addProductModal')" class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
+                        Cancel
+                    </button>
+                    <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                        Add Product
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Add Coupon Modal -->
+    <div id="addCouponModal" class="modal fixed inset-0 bg-black bg-opacity-50 items-center justify-center z-50">
+        <div class="bg-white rounded-lg p-6 w-full max-w-md mx-4">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-bold">Create Coupon</h2>
+                <button onclick="closeModal('addCouponModal')" class="text-gray-500 hover:text-gray-700">
+                    <i data-lucide="x" class="h-6 w-6"></i>
+                </button>
+            </div>
+            
+            <form id="addCouponForm" onsubmit="handleAddCoupon(event)">
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Coupon Code</label>
+                    <input type="text" id="couponCode" required class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
+                </div>
+                
+                <div class="grid grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Discount</label>
+                        <input type="number" id="couponDiscount" required class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Type</label>
+                        <select id="couponType" required class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            <option value="percentage">Percentage</option>
+                            <option value="fixed">Fixed Amount</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Minimum Amount (₹)</label>
+                    <input type="number" id="couponMinAmount" required class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
+                </div>
+                
+                <div class="mb-6">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Expiry Date</label>
+                    <input type="date" id="couponExpiry" required class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
+                </div>
+                
+                <div class="flex justify-end space-x-4">
+                    <button type="button" onclick="closeModal('addCouponModal')" class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
+                        Cancel
+                    </button>
+                    <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                        Create Coupon
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Sample data
+        const sampleProducts = [
+            {
+                id: '1',
+                name: 'Wireless Bluetooth Headphones',
+                price: 2999,
+                originalPrice: 3999,
+                image: 'https://images.pexels.com/photos/3587478/pexels-photo-3587478.jpeg?auto=compress&cs=tinysrgb&w=500',
+                category: 'Electronics',
+                description: 'High-quality wireless Bluetooth headphones with noise cancellation and 30-hour battery life.',
+                rating: 4.5,
+                reviewCount: 128,
+                inStock: true,
+                featured: true
+            },
+            {
+                id: '2',
+                name: 'Smart Watch Series 7',
+                price: 15999,
+                originalPrice: 19999,
+                image: 'https://images.pexels.com/photos/393047/pexels-photo-393047.jpeg?auto=compress&cs=tinysrgb&w=500',
+                category: 'Electronics',
+                description: 'Advanced smartwatch with health monitoring, GPS, and 5-day battery life.',
+                rating: 4.7,
+                reviewCount: 89,
+                inStock: true,
+                featured: true
+            },
+            {
+                id: '3',
+                name: 'Casual Cotton T-Shirt',
+                price: 899,
+                originalPrice: 1299,
+                image: 'https://images.pexels.com/photos/1183266/pexels-photo-1183266.jpeg?auto=compress&cs=tinysrgb&w=500',
+                category: 'Clothing',
+                description: 'Comfortable 100% cotton t-shirt available in multiple colors and sizes.',
+                rating: 4.2,
+                reviewCount: 45,
+                inStock: true,
+                featured: false
+            },
+            {
+                id: '4',
+                name: 'Coffee Maker Deluxe',
+                price: 8999,
+                originalPrice: 12999,
+                image: 'https://images.pexels.com/photos/324028/pexels-photo-324028.jpeg?auto=compress&cs=tinysrgb&w=500',
+                category: 'Home & Kitchen',
+                description: 'Premium coffee maker with programmable brewing and thermal carafe.',
+                rating: 4.6,
+                reviewCount: 67,
+                inStock: true,
+                featured: true
+            }
+        ];
+
+        let products = [...sampleProducts];
+        let coupons = [
+            {
+                id: '1',
+                code: 'WELCOME10',
+                discount: 10,
+                type: 'percentage',
+                minAmount: 500,
+                expiresAt: new Date('2024-12-31'),
+                active: true
+            },
+            {
+                id: '2',
+                code: 'SAVE100',
+                discount: 100,
+                type: 'fixed',
+                minAmount: 1000,
+                expiresAt: new Date('2024-11-30'),
+                active: true
+            }
+        ];
+
+        let currentTab = 'overview';
+
+        // Initialize the admin dashboard
+        document.addEventListener('DOMContentLoaded', function() {
+            lucide.createIcons();
+            loadOverviewData();
+            loadProductsTable();
+            loadCouponsTable();
+        });
+
+        // Tab management
+        function showTab(tabName) {
+            // Hide all tab contents
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.add('hidden');
+            });
+            
+            // Show selected tab
+            document.getElementById(tabName + 'Tab').classList.remove('hidden');
+            
+            // Update tab buttons
+            document.querySelectorAll('.admin-tab').forEach(btn => {
+                btn.classList.remove('tab-active');
+                btn.classList.add('border-transparent', 'text-gray-500', 'hover:text-gray-700', 'hover:border-gray-300');
+            });
+            
+            event.target.classList.add('tab-active');
+            event.target.classList.remove('border-transparent', 'text-gray-500', 'hover:text-gray-700', 'hover:border-gray-300');
+            
+            currentTab = tabName;
+            
+            // Load tab-specific data
+            switch(tabName) {
+                case 'overview':
+                    loadOverviewData();
+                    break;
+                case 'products':
+                    loadProductsTable();
+                    break;
+                case 'coupons':
+                    loadCouponsTable();
+                    break;
+            }
+        }
+
+        // Load overview data
+        function loadOverviewData() {
+            // Load recent orders
+            const recentOrders = document.getElementById('recentOrders');
+            recentOrders.innerHTML = Array.from({length: 5}, (_, i) => `
+                <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                    <div>
+                        <p class="font-medium">Order #${1000 + i + 1}</p>
+                        <p class="text-sm text-gray-600">Customer ${i + 1}</p>
+                    </div>
+                    <div class="text-right">
+                        <p class="font-medium">₹${((i + 1) * 1234).toLocaleString()}</p>
+                        <p class="text-sm text-green-600">Completed</p>
+                    </div>
+                </div>
+            `).join('');
+
+            // Load top products
+            const topProducts = document.getElementById('topProducts');
+            topProducts.innerHTML = products.slice(0, 5).map(product => `
+                <div class="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
+                    <img src="${product.image}" alt="${product.name}" class="w-12 h-12 object-cover rounded" />
+                    <div class="flex-1">
+                        <p class="font-medium">${product.name}</p>
+                        <p class="text-sm text-gray-600">₹${product.price}</p>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-sm text-gray-600">${product.reviewCount} sold</p>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Load products table
+        function loadProductsTable() {
+            const tbody = document.getElementById('productsTableBody');
+            tbody.innerHTML = products.map(product => `
+                <tr>
+                    <td class="px-4 py-4 whitespace-nowrap">
+                        <div class="flex items-center">
+                            <img src="${product.image}" alt="${product.name}" class="w-10 h-10 object-cover rounded" />
+                            <div class="ml-4">
+                                <p class="text-sm font-medium text-gray-900">${product.name}</p>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500">${product.category}</td>
+                    <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">₹${product.price}</td>
+                    <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">In Stock</td>
+                    <td class="px-4 py-4 whitespace-nowrap">
+                        <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                            product.inStock ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                        }">
+                            ${product.inStock ? 'Active' : 'Inactive'}
+                        </span>
+                    </td>
+                    <td class="px-4 py-4 whitespace-nowrap text-sm font-medium">
+                        <div class="flex space-x-2">
+                            <button onclick="editProduct('${product.id}')" class="text-blue-600 hover:text-blue-700">
+                                <i data-lucide="edit" class="h-4 w-4"></i>
+                            </button>
+                            <button onclick="deleteProduct('${product.id}')" class="text-red-600 hover:text-red-700">
+                                <i data-lucide="trash-2" class="h-4 w-4"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+            
+            lucide.createIcons();
+        }
+
+        // Load coupons table
+        function loadCouponsTable() {
+            const tbody = document.getElementById('couponsTableBody');
+            tbody.innerHTML = coupons.map(coupon => `
+                <tr>
+                    <td class="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${coupon.code}</td>
+                    <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
+                        ${coupon.type === 'percentage' ? coupon.discount + '%' : '₹' + coupon.discount}
+                    </td>
+                    <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
+                        ${coupon.type === 'percentage' ? 'Percentage' : 'Fixed Amount'}
+                    </td>
+                    <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">₹${coupon.minAmount}</td>
+                    <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
+                        ${coupon.expiresAt.toLocaleDateString()}
+                    </td>
+                    <td class="px-4 py-4 whitespace-nowrap">
+                        <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                            coupon.active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                        }">
+                            ${coupon.active ? 'Active' : 'Inactive'}
+                        </span>
+                    </td>
+                    <td class="px-4 py-4 whitespace-nowrap text-sm font-medium">
+                        <div class="flex space-x-2">
+                            <button onclick="toggleCoupon('${coupon.id}')" class="text-blue-600 hover:text-blue-700">
+                                <i data-lucide="toggle-left" class="h-4 w-4"></i>
+                            </button>
+                            <button onclick="deleteCoupon('${coupon.id}')" class="text-red-600 hover:text-red-700">
+                                <i data-lucide="trash-2" class="h-4 w-4"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+            
+            lucide.createIcons();
+        }
+
+        // Modal management
+        function showAddProductModal() {
+            document.getElementById('addProductModal').classList.add('active');
+        }
+
+        function showAddCouponModal() {
+            document.getElementById('addCouponModal').classList.add('active');
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('active');
+        }
+
+        // Product management
+        function handleAddProduct(event) {
+            event.preventDefault();
+            
+            const newProduct = {
+                id: Date.now().toString(),
+                name: document.getElementById('productName').value,
+                category: document.getElementById('productCategory').value,
+                price: parseInt(document.getElementById('productPrice').value),
+                originalPrice: document.getElementById('productOriginalPrice').value ? 
+                    parseInt(document.getElementById('productOriginalPrice').value) : null,
+                description: document.getElementById('productDescription').value,
+                image: document.getElementById('productImage').value,
+                inStock: document.getElementById('productInStock').checked,
+                featured: document.getElementById('productFeatured').checked,
+                rating: 4.0,
+                reviewCount: 0
+            };
+            
+            products.push(newProduct);
+            loadProductsTable();
+            closeModal('addProductModal');
+            
+            // Reset form
+            document.getElementById('addProductForm').reset();
+            
+            alert('Product added successfully!');
+        }
+
+        function editProduct(productId) {
+            const product = products.find(p => p.id === productId);
+            if (product) {
+                // Populate form with product data
+                document.getElementById('productName').value = product.name;
+                document.getElementById('productCategory').value = product.category;
+                document.getElementById('productPrice').value = product.price;
+                document.getElementById('productOriginalPrice').value = product.originalPrice || '';
+                document.getElementById('productDescription').value = product.description;
+                document.getElementById('productImage').value = product.image;
+                document.getElementById('productInStock').checked = product.inStock;
+                document.getElementById('productFeatured').checked = product.featured;
+                
+                showAddProductModal();
+            }
+        }
+
+        function deleteProduct(productId) {
+            if (confirm('Are you sure you want to delete this product?')) {
+                products = products.filter(p => p.id !== productId);
+                loadProductsTable();
+                alert('Product deleted successfully!');
+            }
+        }
+
+        // Coupon management
+        function handleAddCoupon(event) {
+            event.preventDefault();
+            
+            const newCoupon = {
+                id: Date.now().toString(),
+                code: document.getElementById('couponCode').value,
+                discount: parseInt(document.getElementById('couponDiscount').value),
+                type: document.getElementById('couponType').value,
+                minAmount: parseInt(document.getElementById('couponMinAmount').value),
+                expiresAt: new Date(document.getElementById('couponExpiry').value),
+                active: true
+            };
+            
+            coupons.push(newCoupon);
+            loadCouponsTable();
+            closeModal('addCouponModal');
+            
+            // Reset form
+            document.getElementById('addCouponForm').reset();
+            
+            alert('Coupon created successfully!');
+        }
+
+        function toggleCoupon(couponId) {
+            const coupon = coupons.find(c => c.id === couponId);
+            if (coupon) {
+                coupon.active = !coupon.active;
+                loadCouponsTable();
+            }
+        }
+
+        function deleteCoupon(couponId) {
+            if (confirm('Are you sure you want to delete this coupon?')) {
+                coupons = coupons.filter(c => c.id !== couponId);
+                loadCouponsTable();
+                alert('Coupon deleted successfully!');
+            }
+        }
+
+        // Filter functions
+        function filterProducts() {
+            const searchTerm = document.getElementById('productSearch').value.toLowerCase();
+            const categoryFilter = document.getElementById('categoryFilter').value;
+            
+            let filtered = products;
+            
+            if (searchTerm) {
+                filtered = filtered.filter(product => 
+                    product.name.toLowerCase().includes(searchTerm) ||
+                    product.description.toLowerCase().includes(searchTerm)
+                );
+            }
+            
+            if (categoryFilter) {
+                filtered = filtered.filter(product => product.category === categoryFilter);
+            }
+            
+            // Update table with filtered results
+            const tbody = document.getElementById('productsTableBody');
+            tbody.innerHTML = filtered.map(product => `
+                <tr>
+                    <td class="px-4 py-4 whitespace-nowrap">
+                        <div class="flex items-center">
+                            <img src="${product.image}" alt="${product.name}" class="w-10 h-10 object-cover rounded" />
+                            <div class="ml-4">
+                                <p class="text-sm font-medium text-gray-900">${product.name}</p>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500">${product.category}</td>
+                    <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">₹${product.price}</td>
+                    <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">In Stock</td>
+                    <td class="px-4 py-4 whitespace-nowrap">
+                        <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                            product.inStock ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                        }">
+                            ${product.inStock ? 'Active' : 'Inactive'}
+                        </span>
+                    </td>
+                    <td class="px-4 py-4 whitespace-nowrap text-sm font-medium">
+                        <div class="flex space-x-2">
+                            <button onclick="editProduct('${product.id}')" class="text-blue-600 hover:text-blue-700">
+                                <i data-lucide="edit" class="h-4 w-4"></i>
+                            </button>
+                            <button onclick="deleteProduct('${product.id}')" class="text-red-600 hover:text-red-700">
+                                <i data-lucide="trash-2" class="h-4 w-4"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+            
+            lucide.createIcons();
+        }
+
+        function filterOrders() {
+            // Implement order filtering
+            console.log('Filter orders');
+        }
+
+        // Utility functions
+        function toggleAdminMenu() {
+            const adminMenu = document.getElementById('adminMenu');
+            adminMenu.classList.toggle('opacity-0');
+            adminMenu.classList.toggle('invisible');
+        }
+
+        function showSettings() {
+            alert('Settings panel would open here');
+        }
+
+        function adminLogout() {
+            if (confirm('Are you sure you want to logout?')) {
+                window.location.href = 'index.html';
+            }
+        }
+
+        function exportData() {
+            alert('Data export functionality would be implemented here');
+        }
+
+        function exportUsers() {
+            alert('User export functionality would be implemented here');
+        }
+
+        // Close dropdowns when clicking outside
+        document.addEventListener('click', function(event) {
+            const adminMenu = document.getElementById('adminMenu');
+            const adminMenuBtn = event.target.closest('button');
+            
+            if (!adminMenuBtn || !adminMenuBtn.onclick || adminMenuBtn.onclick.toString().indexOf('toggleAdminMenu') === -1) {
+                adminMenu.classList.add('opacity-0', 'invisible');
+            }
+        });
+
+        // Close modals when clicking outside
+        document.addEventListener('click', function(event) {
+            if (event.target.classList.contains('modal')) {
+                event.target.classList.remove('active');
+            }
+        });
+    </script>
+</body>
+</html>
