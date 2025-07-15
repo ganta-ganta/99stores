@@ -31,6 +31,19 @@
             40% { transform: translateY(-10px); }
             80% { transform: translateY(-5px); }
         }
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #3498db;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
     </style>
 </head>
 <body class="bg-gray-50">
@@ -218,10 +231,11 @@
                         <div class="max-w-md mx-auto flex">
                             <input
                                 type="email"
+                                id="newsletterEmail"
                                 placeholder="Enter your email"
                                 class="flex-1 px-4 py-3 rounded-l-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
                             />
-                            <button class="bg-blue-600 px-6 py-3 rounded-r-lg hover:bg-blue-700 transition-colors">
+                            <button onclick="subscribeNewsletter()" class="bg-blue-600 px-6 py-3 rounded-r-lg hover:bg-blue-700 transition-colors">
                                 Subscribe
                             </button>
                         </div>
@@ -282,7 +296,7 @@
                                 </div>
                             </div>
                         </div>
-                        <button onclick="showPage('checkout')" class="w-full bg-blue-600 text-white py-3 px-6 rounded-lg hover:bg-blue-700 transition-colors mt-6">
+                        <button onclick="proceedToCheckout()" class="w-full bg-blue-600 text-white py-3 px-6 rounded-lg hover:bg-blue-700 transition-colors mt-6">
                             Proceed to Checkout
                         </button>
                     </div>
@@ -350,8 +364,9 @@
                         </div>
 
                         <div>
-                            <button type="submit" class="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-                                Sign in
+                            <button type="submit" id="loginBtn" class="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                                <span id="loginBtnText">Sign in</span>
+                                <div id="loginLoader" class="loading hidden ml-2"></div>
                             </button>
                         </div>
 
@@ -444,8 +459,9 @@
                         </div>
 
                         <div>
-                            <button type="submit" class="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-                                Create account
+                            <button type="submit" id="registerBtn" class="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                                <span id="registerBtnText">Create account</span>
+                                <div id="registerLoader" class="loading hidden ml-2"></div>
                             </button>
                         </div>
 
@@ -588,171 +604,348 @@
         </div>
     </footer>
 
+    <!-- Firebase SDK -->
+    <script type="module">
+        // Import Firebase modules
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
+        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, updateProfile } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
+        import { getFirestore, collection, addDoc, getDocs, doc, setDoc, getDoc, updateDoc, deleteDoc, query, where, orderBy, onSnapshot } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
+        import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-analytics.js";
+
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyCtENzgbo12j2fHfraERzFq6LjLisdA2T8",
+            authDomain: "store-d7663.firebaseapp.com",
+            projectId: "store-d7663",
+            storageBucket: "store-d7663.firebasestorage.app",
+            messagingSenderId: "45645072994",
+            appId: "1:45645072994:web:87bf34dff97cdedc67df3b",
+            measurementId: "G-ESDEZ9YKV1"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const analytics = getAnalytics(app);
+
+        // Make Firebase services available globally
+        window.auth = auth;
+        window.db = db;
+        window.firebaseAuth = { createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, updateProfile };
+        window.firestore = { collection, addDoc, getDocs, doc, setDoc, getDoc, updateDoc, deleteDoc, query, where, orderBy, onSnapshot };
+
+        // Initialize sample data in Firebase
+        async function initializeSampleData() {
+            try {
+                // Check if categories already exist
+                const categoriesSnapshot = await getDocs(collection(db, 'categories'));
+                if (categoriesSnapshot.empty) {
+                    // Add sample categories
+                    const sampleCategories = [
+                        {
+                            id: '1',
+                            name: 'Electronics',
+                            image: 'https://images.pexels.com/photos/356056/pexels-photo-356056.jpeg?auto=compress&cs=tinysrgb&w=400',
+                            productCount: 245
+                        },
+                        {
+                            id: '2',
+                            name: 'Clothing',
+                            image: 'https://images.pexels.com/photos/996329/pexels-photo-996329.jpeg?auto=compress&cs=tinysrgb&w=400',
+                            productCount: 189
+                        },
+                        {
+                            id: '3',
+                            name: 'Home & Kitchen',
+                            image: 'https://images.pexels.com/photos/1080721/pexels-photo-1080721.jpeg?auto=compress&cs=tinysrgb&w=400',
+                            productCount: 156
+                        },
+                        {
+                            id: '4',
+                            name: 'Sports & Fitness',
+                            image: 'https://images.pexels.com/photos/1552242/pexels-photo-1552242.jpeg?auto=compress&cs=tinysrgb&w=400',
+                            productCount: 98
+                        },
+                        {
+                            id: '5',
+                            name: 'Books',
+                            image: 'https://images.pexels.com/photos/1029141/pexels-photo-1029141.jpeg?auto=compress&cs=tinysrgb&w=400',
+                            productCount: 67
+                        },
+                        {
+                            id: '6',
+                            name: 'Furniture',
+                            image: 'https://images.pexels.com/photos/1350789/pexels-photo-1350789.jpeg?auto=compress&cs=tinysrgb&w=400',
+                            productCount: 134
+                        }
+                    ];
+
+                    for (const category of sampleCategories) {
+                        await setDoc(doc(db, 'categories', category.id), category);
+                    }
+                }
+
+                // Check if products already exist
+                const productsSnapshot = await getDocs(collection(db, 'products'));
+                if (productsSnapshot.empty) {
+                    // Add sample products
+                    const sampleProducts = [
+                        {
+                            id: '1',
+                            name: 'Wireless Bluetooth Headphones',
+                            price: 2999,
+                            originalPrice: 3999,
+                            image: 'https://images.pexels.com/photos/3587478/pexels-photo-3587478.jpeg?auto=compress&cs=tinysrgb&w=500',
+                            images: [
+                                'https://images.pexels.com/photos/3587478/pexels-photo-3587478.jpeg?auto=compress&cs=tinysrgb&w=500',
+                                'https://images.pexels.com/photos/1649771/pexels-photo-1649771.jpeg?auto=compress&cs=tinysrgb&w=500'
+                            ],
+                            category: 'Electronics',
+                            description: 'High-quality wireless Bluetooth headphones with noise cancellation and 30-hour battery life.',
+                            rating: 4.5,
+                            reviewCount: 128,
+                            inStock: true,
+                            featured: true,
+                            tags: ['wireless', 'bluetooth', 'headphones', 'audio'],
+                            createdAt: new Date()
+                        },
+                        {
+                            id: '2',
+                            name: 'Smart Watch Series 7',
+                            price: 15999,
+                            originalPrice: 19999,
+                            image: 'https://images.pexels.com/photos/393047/pexels-photo-393047.jpeg?auto=compress&cs=tinysrgb&w=500',
+                            images: [
+                                'https://images.pexels.com/photos/393047/pexels-photo-393047.jpeg?auto=compress&cs=tinysrgb&w=500',
+                                'https://images.pexels.com/photos/1432794/pexels-photo-1432794.jpeg?auto=compress&cs=tinysrgb&w=500'
+                            ],
+                            category: 'Electronics',
+                            description: 'Advanced smartwatch with health monitoring, GPS, and 5-day battery life.',
+                            rating: 4.7,
+                            reviewCount: 89,
+                            inStock: true,
+                            featured: true,
+                            tags: ['smartwatch', 'fitness', 'health', 'gps'],
+                            createdAt: new Date()
+                        },
+                        {
+                            id: '3',
+                            name: 'Casual Cotton T-Shirt',
+                            price: 899,
+                            originalPrice: 1299,
+                            image: 'https://images.pexels.com/photos/1183266/pexels-photo-1183266.jpeg?auto=compress&cs=tinysrgb&w=500',
+                            images: [
+                                'https://images.pexels.com/photos/1183266/pexels-photo-1183266.jpeg?auto=compress&cs=tinysrgb&w=500',
+                                'https://images.pexels.com/photos/1040945/pexels-photo-1040945.jpeg?auto=compress&cs=tinysrgb&w=500'
+                            ],
+                            category: 'Clothing',
+                            description: 'Comfortable 100% cotton t-shirt available in multiple colors and sizes.',
+                            rating: 4.2,
+                            reviewCount: 45,
+                            inStock: true,
+                            featured: false,
+                            tags: ['tshirt', 'cotton', 'casual', 'clothing'],
+                            createdAt: new Date()
+                        },
+                        {
+                            id: '4',
+                            name: 'Coffee Maker Deluxe',
+                            price: 8999,
+                            originalPrice: 12999,
+                            image: 'https://images.pexels.com/photos/324028/pexels-photo-324028.jpeg?auto=compress&cs=tinysrgb&w=500',
+                            images: [
+                                'https://images.pexels.com/photos/324028/pexels-photo-324028.jpeg?auto=compress&cs=tinysrgb&w=500',
+                                'https://images.pexels.com/photos/2396220/pexels-photo-2396220.jpeg?auto=compress&cs=tinysrgb&w=500'
+                            ],
+                            category: 'Home & Kitchen',
+                            description: 'Premium coffee maker with programmable brewing and thermal carafe.',
+                            rating: 4.6,
+                            reviewCount: 67,
+                            inStock: true,
+                            featured: true,
+                            tags: ['coffee', 'maker', 'kitchen', 'brewing'],
+                            createdAt: new Date()
+                        },
+                        {
+                            id: '5',
+                            name: 'Ergonomic Office Chair',
+                            price: 12999,
+                            originalPrice: 16999,
+                            image: 'https://images.pexels.com/photos/1957477/pexels-photo-1957477.jpeg?auto=compress&cs=tinysrgb&w=500',
+                            images: [
+                                'https://images.pexels.com/photos/1957477/pexels-photo-1957477.jpeg?auto=compress&cs=tinysrgb&w=500',
+                                'https://images.pexels.com/photos/3316924/pexels-photo-3316924.jpeg?auto=compress&cs=tinysrgb&w=500'
+                            ],
+                            category: 'Furniture',
+                            description: 'Professional ergonomic office chair with lumbar support and adjustable height.',
+                            rating: 4.8,
+                            reviewCount: 92,
+                            inStock: true,
+                            featured: false,
+                            tags: ['office', 'chair', 'ergonomic', 'furniture'],
+                            createdAt: new Date()
+                        },
+                        {
+                            id: '6',
+                            name: 'Gaming Mechanical Keyboard',
+                            price: 4999,
+                            originalPrice: 6999,
+                            image: 'https://images.pexels.com/photos/1194713/pexels-photo-1194713.jpeg?auto=compress&cs=tinysrgb&w=500',
+                            images: [
+                                'https://images.pexels.com/photos/1194713/pexels-photo-1194713.jpeg?auto=compress&cs=tinysrgb&w=500',
+                                'https://images.pexels.com/photos/2115256/pexels-photo-2115256.jpeg?auto=compress&cs=tinysrgb&w=500'
+                            ],
+                            category: 'Electronics',
+                            description: 'RGB mechanical gaming keyboard with blue switches and customizable backlighting.',
+                            rating: 4.4,
+                            reviewCount: 156,
+                            inStock: true,
+                            featured: true,
+                            tags: ['gaming', 'keyboard', 'mechanical', 'rgb'],
+                            createdAt: new Date()
+                        }
+                    ];
+
+                    for (const product of sampleProducts) {
+                        await setDoc(doc(db, 'products', product.id), product);
+                    }
+                }
+            } catch (error) {
+                console.error('Error initializing sample data:', error);
+            }
+        }
+
+        // Initialize sample data when the page loads
+        initializeSampleData();
+    </script>
+
     <script>
-        // Sample data
-        const sampleProducts = [
-            {
-                id: '1',
-                name: 'Wireless Bluetooth Headphones',
-                price: 2999,
-                originalPrice: 3999,
-                image: 'https://images.pexels.com/photos/3587478/pexels-photo-3587478.jpeg?auto=compress&cs=tinysrgb&w=500',
-                images: [
-                    'https://images.pexels.com/photos/3587478/pexels-photo-3587478.jpeg?auto=compress&cs=tinysrgb&w=500',
-                    'https://images.pexels.com/photos/1649771/pexels-photo-1649771.jpeg?auto=compress&cs=tinysrgb&w=500'
-                ],
-                category: 'Electronics',
-                description: 'High-quality wireless Bluetooth headphones with noise cancellation and 30-hour battery life.',
-                rating: 4.5,
-                reviewCount: 128,
-                inStock: true,
-                featured: true,
-                tags: ['wireless', 'bluetooth', 'headphones', 'audio']
-            },
-            {
-                id: '2',
-                name: 'Smart Watch Series 7',
-                price: 15999,
-                originalPrice: 19999,
-                image: 'https://images.pexels.com/photos/393047/pexels-photo-393047.jpeg?auto=compress&cs=tinysrgb&w=500',
-                images: [
-                    'https://images.pexels.com/photos/393047/pexels-photo-393047.jpeg?auto=compress&cs=tinysrgb&w=500',
-                    'https://images.pexels.com/photos/1432794/pexels-photo-1432794.jpeg?auto=compress&cs=tinysrgb&w=500'
-                ],
-                category: 'Electronics',
-                description: 'Advanced smartwatch with health monitoring, GPS, and 5-day battery life.',
-                rating: 4.7,
-                reviewCount: 89,
-                inStock: true,
-                featured: true,
-                tags: ['smartwatch', 'fitness', 'health', 'gps']
-            },
-            {
-                id: '3',
-                name: 'Casual Cotton T-Shirt',
-                price: 899,
-                originalPrice: 1299,
-                image: 'https://images.pexels.com/photos/1183266/pexels-photo-1183266.jpeg?auto=compress&cs=tinysrgb&w=500',
-                images: [
-                    'https://images.pexels.com/photos/1183266/pexels-photo-1183266.jpeg?auto=compress&cs=tinysrgb&w=500',
-                    'https://images.pexels.com/photos/1040945/pexels-photo-1040945.jpeg?auto=compress&cs=tinysrgb&w=500'
-                ],
-                category: 'Clothing',
-                description: 'Comfortable 100% cotton t-shirt available in multiple colors and sizes.',
-                rating: 4.2,
-                reviewCount: 45,
-                inStock: true,
-                featured: false,
-                tags: ['tshirt', 'cotton', 'casual', 'clothing']
-            },
-            {
-                id: '4',
-                name: 'Coffee Maker Deluxe',
-                price: 8999,
-                originalPrice: 12999,
-                image: 'https://images.pexels.com/photos/324028/pexels-photo-324028.jpeg?auto=compress&cs=tinysrgb&w=500',
-                images: [
-                    'https://images.pexels.com/photos/324028/pexels-photo-324028.jpeg?auto=compress&cs=tinysrgb&w=500',
-                    'https://images.pexels.com/photos/2396220/pexels-photo-2396220.jpeg?auto=compress&cs=tinysrgb&w=500'
-                ],
-                category: 'Home & Kitchen',
-                description: 'Premium coffee maker with programmable brewing and thermal carafe.',
-                rating: 4.6,
-                reviewCount: 67,
-                inStock: true,
-                featured: true,
-                tags: ['coffee', 'maker', 'kitchen', 'brewing']
-            },
-            {
-                id: '5',
-                name: 'Ergonomic Office Chair',
-                price: 12999,
-                originalPrice: 16999,
-                image: 'https://images.pexels.com/photos/1957477/pexels-photo-1957477.jpeg?auto=compress&cs=tinysrgb&w=500',
-                images: [
-                    'https://images.pexels.com/photos/1957477/pexels-photo-1957477.jpeg?auto=compress&cs=tinysrgb&w=500',
-                    'https://images.pexels.com/photos/3316924/pexels-photo-3316924.jpeg?auto=compress&cs=tinysrgb&w=500'
-                ],
-                category: 'Furniture',
-                description: 'Professional ergonomic office chair with lumbar support and adjustable height.',
-                rating: 4.8,
-                reviewCount: 92,
-                inStock: true,
-                featured: false,
-                tags: ['office', 'chair', 'ergonomic', 'furniture']
-            },
-            {
-                id: '6',
-                name: 'Gaming Mechanical Keyboard',
-                price: 4999,
-                originalPrice: 6999,
-                image: 'https://images.pexels.com/photos/1194713/pexels-photo-1194713.jpeg?auto=compress&cs=tinysrgb&w=500',
-                images: [
-                    'https://images.pexels.com/photos/1194713/pexels-photo-1194713.jpeg?auto=compress&cs=tinysrgb&w=500',
-                    'https://images.pexels.com/photos/2115256/pexels-photo-2115256.jpeg?auto=compress&cs=tinysrgb&w=500'
-                ],
-                category: 'Electronics',
-                description: 'RGB mechanical gaming keyboard with blue switches and customizable backlighting.',
-                rating: 4.4,
-                reviewCount: 156,
-                inStock: true,
-                featured: true,
-                tags: ['gaming', 'keyboard', 'mechanical', 'rgb']
-            }
-        ];
-
-        const sampleCategories = [
-            {
-                id: '1',
-                name: 'Electronics',
-                image: 'https://images.pexels.com/photos/356056/pexels-photo-356056.jpeg?auto=compress&cs=tinysrgb&w=400',
-                productCount: 245
-            },
-            {
-                id: '2',
-                name: 'Clothing',
-                image: 'https://images.pexels.com/photos/996329/pexels-photo-996329.jpeg?auto=compress&cs=tinysrgb&w=400',
-                productCount: 189
-            },
-            {
-                id: '3',
-                name: 'Home & Kitchen',
-                image: 'https://images.pexels.com/photos/1080721/pexels-photo-1080721.jpeg?auto=compress&cs=tinysrgb&w=400',
-                productCount: 156
-            },
-            {
-                id: '4',
-                name: 'Sports & Fitness',
-                image: 'https://images.pexels.com/photos/1552242/pexels-photo-1552242.jpeg?auto=compress&cs=tinysrgb&w=400',
-                productCount: 98
-            },
-            {
-                id: '5',
-                name: 'Books',
-                image: 'https://images.pexels.com/photos/1029141/pexels-photo-1029141.jpeg?auto=compress&cs=tinysrgb&w=400',
-                productCount: 67
-            },
-            {
-                id: '6',
-                name: 'Furniture',
-                image: 'https://images.pexels.com/photos/1350789/pexels-photo-1350789.jpeg?auto=compress&cs=tinysrgb&w=400',
-                productCount: 134
-            }
-        ];
-
         // Global state
         let currentUser = null;
-        let cart = JSON.parse(localStorage.getItem('guntur99_cart') || '[]');
+        let cart = [];
         let currentPage = 'home';
         let currentProduct = null;
+        let products = [];
+        let categories = [];
+        let userWishlist = [];
+        let userOrders = [];
 
         // Initialize the app
         document.addEventListener('DOMContentLoaded', function() {
             lucide.createIcons();
-            loadUserFromStorage();
-            updateCartUI();
+            initializeAuth();
             loadHomePage();
         });
+
+        // Initialize authentication
+        function initializeAuth() {
+            window.firebaseAuth.onAuthStateChanged(auth, async (user) => {
+                if (user) {
+                    currentUser = {
+                        uid: user.uid,
+                        email: user.email,
+                        name: user.displayName || user.email.split('@')[0]
+                    };
+                    updateUserUI();
+                    await loadUserData();
+                } else {
+                    currentUser = null;
+                    cart = [];
+                    userWishlist = [];
+                    userOrders = [];
+                    updateUserUI();
+                    updateCartUI();
+                }
+            });
+        }
+
+        // Load user data from Firebase
+        async function loadUserData() {
+            if (!currentUser) return;
+
+            try {
+                // Load user cart
+                const cartDoc = await window.firestore.getDoc(window.firestore.doc(db, 'carts', currentUser.uid));
+                if (cartDoc.exists()) {
+                    cart = cartDoc.data().items || [];
+                    updateCartUI();
+                }
+
+                // Load user wishlist
+                const wishlistDoc = await window.firestore.getDoc(window.firestore.doc(db, 'wishlists', currentUser.uid));
+                if (wishlistDoc.exists()) {
+                    userWishlist = wishlistDoc.data().items || [];
+                }
+
+                // Load user orders
+                const ordersQuery = window.firestore.query(
+                    window.firestore.collection(db, 'orders'),
+                    window.firestore.where('userId', '==', currentUser.uid),
+                    window.firestore.orderBy('createdAt', 'desc')
+                );
+                const ordersSnapshot = await window.firestore.getDocs(ordersQuery);
+                userOrders = ordersSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            } catch (error) {
+                console.error('Error loading user data:', error);
+            }
+        }
+
+        // Load products from Firebase
+        async function loadProducts() {
+            try {
+                const productsSnapshot = await window.firestore.getDocs(window.firestore.collection(db, 'products'));
+                products = productsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                return products;
+            } catch (error) {
+                console.error('Error loading products:', error);
+                return [];
+            }
+        }
+
+        // Load categories from Firebase
+        async function loadCategories() {
+            try {
+                const categoriesSnapshot = await window.firestore.getDocs(window.firestore.collection(db, 'categories'));
+                categories = categoriesSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                
+                const categoriesGrid = document.getElementById('categoriesGrid');
+                categoriesGrid.innerHTML = categories.map(category => `
+                    <div class="group cursor-pointer" onclick="showCategoryProducts('${category.id}')">
+                        <div class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300">
+                            <div class="relative overflow-hidden">
+                                <img
+                                    src="${category.image}"
+                                    alt="${category.name}"
+                                    class="w-full h-32 object-cover group-hover:scale-105 transition-transform duration-300"
+                                />
+                                <div class="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center">
+                                    <div class="text-center text-white">
+                                        <h3 class="text-xl font-bold mb-1">${category.name}</h3>
+                                        <p class="text-sm">${category.productCount} products</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+            } catch (error) {
+                console.error('Error loading categories:', error);
+            }
+        }
+
+        // Load featured products
+        async function loadFeaturedProducts() {
+            try {
+                const products = await loadProducts();
+                const featured = products.filter(p => p.featured);
+                const featuredProducts = document.getElementById('featuredProducts');
+                featuredProducts.innerHTML = featured.map(product => createProductCard(product)).join('');
+                lucide.createIcons();
+            } catch (error) {
+                console.error('Error loading featured products:', error);
+            }
+        }
 
         // Page navigation
         function showPage(page) {
@@ -785,46 +978,17 @@
         }
 
         // Load home page content
-        function loadHomePage() {
-            loadCategories();
-            loadFeaturedProducts();
-        }
-
-        // Load categories
-        function loadCategories() {
-            const categoriesGrid = document.getElementById('categoriesGrid');
-            categoriesGrid.innerHTML = sampleCategories.map(category => `
-                <div class="group cursor-pointer" onclick="showCategoryProducts('${category.id}')">
-                    <div class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300">
-                        <div class="relative overflow-hidden">
-                            <img
-                                src="${category.image}"
-                                alt="${category.name}"
-                                class="w-full h-32 object-cover group-hover:scale-105 transition-transform duration-300"
-                            />
-                            <div class="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center">
-                                <div class="text-center text-white">
-                                    <h3 class="text-xl font-bold mb-1">${category.name}</h3>
-                                    <p class="text-sm">${category.productCount} products</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        // Load featured products
-        function loadFeaturedProducts() {
-            const featuredProducts = document.getElementById('featuredProducts');
-            const featured = sampleProducts.filter(p => p.featured);
-            featuredProducts.innerHTML = featured.map(product => createProductCard(product)).join('');
+        async function loadHomePage() {
+            await loadCategories();
+            await loadFeaturedProducts();
         }
 
         // Create product card HTML
         function createProductCard(product) {
             const discountPercent = product.originalPrice ? 
                 Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100) : 0;
+            
+            const isInWishlist = userWishlist.some(item => item.productId === product.id);
             
             return `
                 <div class="product-card bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300 group">
@@ -839,8 +1003,8 @@
                                 ${discountPercent}% OFF
                             </div>
                         ` : ''}
-                        <button class="absolute top-2 right-2 p-2 bg-white rounded-full shadow-md hover:bg-gray-50 transition-colors opacity-0 group-hover:opacity-100">
-                            <i data-lucide="heart" class="h-4 w-4 text-gray-600"></i>
+                        <button onclick="event.stopPropagation(); toggleWishlist('${product.id}')" class="absolute top-2 right-2 p-2 bg-white rounded-full shadow-md hover:bg-gray-50 transition-colors opacity-0 group-hover:opacity-100">
+                            <i data-lucide="heart" class="h-4 w-4 ${isInWishlist ? 'text-red-500 fill-current' : 'text-gray-600'}"></i>
                         </button>
                     </div>
                     
@@ -888,117 +1052,123 @@
         }
 
         // Show product details
-        function showProduct(productId) {
-            const product = sampleProducts.find(p => p.id === productId);
-            if (!product) return;
-            
-            currentProduct = product;
-            
-            const productDetails = document.getElementById('productDetails');
-            productDetails.innerHTML = `
-                <div class="space-y-4">
-                    <div class="aspect-square bg-gray-100 rounded-lg overflow-hidden">
-                        <img
-                            src="${product.images[0]}"
-                            alt="${product.name}"
-                            class="w-full h-full object-cover"
-                        />
-                    </div>
-                    <div class="flex space-x-2">
-                        ${product.images.map((image, index) => `
-                            <button
-                                onclick="changeProductImage('${image}')"
-                                class="w-16 h-16 rounded-lg overflow-hidden border-2 border-gray-200"
-                            >
-                                <img
-                                    src="${image}"
-                                    alt="${product.name} ${index + 1}"
-                                    class="w-full h-full object-cover"
-                                />
-                            </button>
-                        `).join('')}
-                    </div>
-                </div>
-
-                <div class="space-y-6">
-                    <div>
-                        <h1 class="text-3xl font-bold text-gray-900 mb-2">${product.name}</h1>
-                        <div class="flex items-center space-x-4 mb-4">
-                            <div class="flex items-center">
-                                ${[...Array(5)].map((_, i) => `
-                                    <i data-lucide="star" class="h-5 w-5 ${
-                                        i < Math.floor(product.rating)
-                                            ? 'text-yellow-400 fill-current'
-                                            : 'text-gray-300'
-                                    }"></i>
-                                `).join('')}
-                            </div>
-                            <span class="text-gray-600">(${product.reviewCount} reviews)</span>
-                        </div>
-                        <div class="flex items-center space-x-4 mb-4">
-                            <span class="text-3xl font-bold text-gray-900">₹${product.price}</span>
-                            ${product.originalPrice ? `
-                                <span class="text-xl text-gray-500 line-through">₹${product.originalPrice}</span>
-                            ` : ''}
-                        </div>
-                        <p class="text-gray-600 mb-6">${product.description}</p>
-                    </div>
-
+        async function showProduct(productId) {
+            try {
+                const productDoc = await window.firestore.getDoc(window.firestore.doc(db, 'products', productId));
+                if (!productDoc.exists()) return;
+                
+                const product = { id: productDoc.id, ...productDoc.data() };
+                currentProduct = product;
+                
+                const productDetails = document.getElementById('productDetails');
+                productDetails.innerHTML = `
                     <div class="space-y-4">
-                        <div class="flex items-center space-x-4">
-                            <span class="text-sm font-medium text-gray-700">Quantity:</span>
-                            <div class="flex items-center border border-gray-300 rounded-lg">
-                                <button onclick="changeQuantity(-1)" class="p-2 hover:bg-gray-100 transition-colors">
-                                    <i data-lucide="minus" class="h-4 w-4"></i>
+                        <div class="aspect-square bg-gray-100 rounded-lg overflow-hidden">
+                            <img
+                                id="mainProductImage"
+                                src="${product.images[0]}"
+                                alt="${product.name}"
+                                class="w-full h-full object-cover"
+                            />
+                        </div>
+                        <div class="flex space-x-2">
+                            ${product.images.map((image, index) => `
+                                <button
+                                    onclick="changeProductImage('${image}')"
+                                    class="w-16 h-16 rounded-lg overflow-hidden border-2 border-gray-200"
+                                >
+                                    <img
+                                        src="${image}"
+                                        alt="${product.name} ${index + 1}"
+                                        class="w-full h-full object-cover"
+                                    />
                                 </button>
-                                <span id="productQuantity" class="px-4 py-2 font-medium">1</span>
-                                <button onclick="changeQuantity(1)" class="p-2 hover:bg-gray-100 transition-colors">
-                                    <i data-lucide="plus" class="h-4 w-4"></i>
+                            `).join('')}
+                        </div>
+                    </div>
+
+                    <div class="space-y-6">
+                        <div>
+                            <h1 class="text-3xl font-bold text-gray-900 mb-2">${product.name}</h1>
+                            <div class="flex items-center space-x-4 mb-4">
+                                <div class="flex items-center">
+                                    ${[...Array(5)].map((_, i) => `
+                                        <i data-lucide="star" class="h-5 w-5 ${
+                                            i < Math.floor(product.rating)
+                                                ? 'text-yellow-400 fill-current'
+                                                : 'text-gray-300'
+                                        }"></i>
+                                    `).join('')}
+                                </div>
+                                <span class="text-gray-600">(${product.reviewCount} reviews)</span>
+                            </div>
+                            <div class="flex items-center space-x-4 mb-4">
+                                <span class="text-3xl font-bold text-gray-900">₹${product.price}</span>
+                                ${product.originalPrice ? `
+                                    <span class="text-xl text-gray-500 line-through">₹${product.originalPrice}</span>
+                                ` : ''}
+                            </div>
+                            <p class="text-gray-600 mb-6">${product.description}</p>
+                        </div>
+
+                        <div class="space-y-4">
+                            <div class="flex items-center space-x-4">
+                                <span class="text-sm font-medium text-gray-700">Quantity:</span>
+                                <div class="flex items-center border border-gray-300 rounded-lg">
+                                    <button onclick="changeQuantity(-1)" class="p-2 hover:bg-gray-100 transition-colors">
+                                        <i data-lucide="minus" class="h-4 w-4"></i>
+                                    </button>
+                                    <span id="productQuantity" class="px-4 py-2 font-medium">1</span>
+                                    <button onclick="changeQuantity(1)" class="p-2 hover:bg-gray-100 transition-colors">
+                                        <i data-lucide="plus" class="h-4 w-4"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="flex space-x-4">
+                                <button
+                                    onclick="addToCartFromProduct()"
+                                    ${!product.inStock ? 'disabled' : ''}
+                                    class="flex-1 bg-blue-600 text-white py-3 px-6 rounded-lg hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors flex items-center justify-center space-x-2"
+                                >
+                                    <i data-lucide="shopping-cart" class="h-5 w-5"></i>
+                                    <span>Add to Cart</span>
+                                </button>
+                                <button onclick="toggleWishlist('${product.id}')" class="px-6 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
+                                    <i data-lucide="heart" class="h-5 w-5 ${userWishlist.some(item => item.productId === product.id) ? 'text-red-500 fill-current' : ''}"></i>
                                 </button>
                             </div>
                         </div>
 
-                        <div class="flex space-x-4">
-                            <button
-                                onclick="addToCartFromProduct()"
-                                ${!product.inStock ? 'disabled' : ''}
-                                class="flex-1 bg-blue-600 text-white py-3 px-6 rounded-lg hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors flex items-center justify-center space-x-2"
-                            >
-                                <i data-lucide="shopping-cart" class="h-5 w-5"></i>
-                                <span>Add to Cart</span>
-                            </button>
-                            <button class="px-6 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
-                                <i data-lucide="heart" class="h-5 w-5"></i>
-                            </button>
-                        </div>
-                    </div>
-
-                    <div class="border-t pt-6">
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <div class="flex items-center space-x-2">
-                                <i data-lucide="truck" class="h-5 w-5 text-green-600"></i>
-                                <span class="text-sm text-gray-600">Free Shipping</span>
-                            </div>
-                            <div class="flex items-center space-x-2">
-                                <i data-lucide="shield" class="h-5 w-5 text-blue-600"></i>
-                                <span class="text-sm text-gray-600">Secure Payment</span>
-                            </div>
-                            <div class="flex items-center space-x-2">
-                                <i data-lucide="rotate-ccw" class="h-5 w-5 text-purple-600"></i>
-                                <span class="text-sm text-gray-600">Easy Returns</span>
+                        <div class="border-t pt-6">
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div class="flex items-center space-x-2">
+                                    <i data-lucide="truck" class="h-5 w-5 text-green-600"></i>
+                                    <span class="text-sm text-gray-600">Free Shipping</span>
+                                </div>
+                                <div class="flex items-center space-x-2">
+                                    <i data-lucide="shield" class="h-5 w-5 text-blue-600"></i>
+                                    <span class="text-sm text-gray-600">Secure Payment</span>
+                                </div>
+                                <div class="flex items-center space-x-2">
+                                    <i data-lucide="rotate-ccw" class="h-5 w-5 text-purple-600"></i>
+                                    <span class="text-sm text-gray-600">Easy Returns</span>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
-            `;
-            
-            showPage('product');
-            lucide.createIcons();
+                `;
+                
+                showPage('product');
+                lucide.createIcons();
+            } catch (error) {
+                console.error('Error loading product:', error);
+            }
         }
 
         // Change product image
         function changeProductImage(imageSrc) {
-            const mainImage = document.querySelector('#productDetails img');
+            const mainImage = document.getElementById('mainProductImage');
             if (mainImage) {
                 mainImage.src = imageSrc;
             }
@@ -1019,29 +1189,41 @@
         }
 
         // Add to cart
-        function addToCart(productId, quantity = 1) {
-            const product = sampleProducts.find(p => p.id === productId);
-            if (!product) return;
-
-            const existingItem = cart.find(item => item.id === productId);
-            
-            if (existingItem) {
-                existingItem.quantity += quantity;
-            } else {
-                cart.push({
-                    id: productId,
-                    product: product,
-                    quantity: quantity
-                });
+        async function addToCart(productId, quantity = 1) {
+            try {
+                const productDoc = await window.firestore.getDoc(window.firestore.doc(db, 'products', productId));
+                if (!productDoc.exists()) return;
+                
+                const product = { id: productDoc.id, ...productDoc.data() };
+                const existingItem = cart.find(item => item.id === productId);
+                
+                if (existingItem) {
+                    existingItem.quantity += quantity;
+                } else {
+                    cart.push({
+                        id: productId,
+                        product: product,
+                        quantity: quantity
+                    });
+                }
+                
+                // Save cart to Firebase if user is logged in
+                if (currentUser) {
+                    await window.firestore.setDoc(window.firestore.doc(db, 'carts', currentUser.uid), {
+                        items: cart,
+                        updatedAt: new Date()
+                    });
+                }
+                
+                updateCartUI();
+                
+                // Show cart badge animation
+                const cartBadge = document.getElementById('cartCount');
+                cartBadge.classList.add('cart-badge');
+                setTimeout(() => cartBadge.classList.remove('cart-badge'), 300);
+            } catch (error) {
+                console.error('Error adding to cart:', error);
             }
-            
-            localStorage.setItem('guntur99_cart', JSON.stringify(cart));
-            updateCartUI();
-            
-            // Show cart badge animation
-            const cartBadge = document.getElementById('cartCount');
-            cartBadge.classList.add('cart-badge');
-            setTimeout(() => cartBadge.classList.remove('cart-badge'), 300);
         }
 
         // Update cart UI
@@ -1107,7 +1289,7 @@
         }
 
         // Update cart quantity
-        function updateCartQuantity(productId, newQuantity) {
+        async function updateCartQuantity(productId, newQuantity) {
             if (newQuantity <= 0) {
                 removeFromCart(productId);
                 return;
@@ -1116,16 +1298,32 @@
             const item = cart.find(item => item.id === productId);
             if (item) {
                 item.quantity = newQuantity;
-                localStorage.setItem('guntur99_cart', JSON.stringify(cart));
+                
+                // Save cart to Firebase if user is logged in
+                if (currentUser) {
+                    await window.firestore.setDoc(window.firestore.doc(db, 'carts', currentUser.uid), {
+                        items: cart,
+                        updatedAt: new Date()
+                    });
+                }
+                
                 updateCartUI();
                 loadCartPage();
             }
         }
 
         // Remove from cart
-        function removeFromCart(productId) {
+        async function removeFromCart(productId) {
             cart = cart.filter(item => item.id !== productId);
-            localStorage.setItem('guntur99_cart', JSON.stringify(cart));
+            
+            // Save cart to Firebase if user is logged in
+            if (currentUser) {
+                await window.firestore.setDoc(window.firestore.doc(db, 'carts', currentUser.uid), {
+                    items: cart,
+                    updatedAt: new Date()
+                });
+            }
+            
             updateCartUI();
             loadCartPage();
         }
@@ -1141,35 +1339,133 @@
             document.getElementById('cartTotal').textContent = `₹${total}`;
         }
 
+        // Proceed to checkout
+        async function proceedToCheckout() {
+            if (!currentUser) {
+                showPage('login');
+                return;
+            }
+
+            if (cart.length === 0) return;
+
+            try {
+                const subtotal = cart.reduce((total, item) => total + (item.product.price * item.quantity), 0);
+                const tax = Math.round(subtotal * 0.18);
+                const total = subtotal + tax;
+
+                // Create order
+                const order = {
+                    userId: currentUser.uid,
+                    items: cart,
+                    subtotal: subtotal,
+                    tax: tax,
+                    total: total,
+                    status: 'pending',
+                    createdAt: new Date(),
+                    shippingAddress: 'Default Address' // In a real app, this would come from user selection
+                };
+
+                const orderRef = await window.firestore.addDoc(window.firestore.collection(db, 'orders'), order);
+                
+                // Clear cart
+                cart = [];
+                await window.firestore.setDoc(window.firestore.doc(db, 'carts', currentUser.uid), {
+                    items: [],
+                    updatedAt: new Date()
+                });
+
+                updateCartUI();
+                alert('Order placed successfully! Order ID: ' + orderRef.id);
+                showPage('profile');
+                showProfileTab('orders');
+            } catch (error) {
+                console.error('Error placing order:', error);
+                alert('Error placing order. Please try again.');
+            }
+        }
+
+        // Toggle wishlist
+        async function toggleWishlist(productId) {
+            if (!currentUser) {
+                showPage('login');
+                return;
+            }
+
+            try {
+                const existingIndex = userWishlist.findIndex(item => item.productId === productId);
+                
+                if (existingIndex > -1) {
+                    // Remove from wishlist
+                    userWishlist.splice(existingIndex, 1);
+                } else {
+                    // Add to wishlist
+                    const productDoc = await window.firestore.getDoc(window.firestore.doc(db, 'products', productId));
+                    if (productDoc.exists()) {
+                        userWishlist.push({
+                            productId: productId,
+                            product: { id: productDoc.id, ...productDoc.data() },
+                            addedAt: new Date()
+                        });
+                    }
+                }
+
+                // Save wishlist to Firebase
+                await window.firestore.setDoc(window.firestore.doc(db, 'wishlists', currentUser.uid), {
+                    items: userWishlist,
+                    updatedAt: new Date()
+                });
+
+                // Refresh current page if needed
+                if (currentPage === 'home') {
+                    loadFeaturedProducts();
+                } else if (currentPage === 'product') {
+                    // Update wishlist button in product page
+                    const heartIcon = document.querySelector('#productDetails button[onclick*="toggleWishlist"] i');
+                    if (heartIcon) {
+                        if (userWishlist.some(item => item.productId === productId)) {
+                            heartIcon.classList.add('text-red-500', 'fill-current');
+                        } else {
+                            heartIcon.classList.remove('text-red-500', 'fill-current');
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error('Error toggling wishlist:', error);
+            }
+        }
+
         // Authentication functions
-        function handleLogin(event) {
+        async function handleLogin(event) {
             event.preventDefault();
             
             const email = document.getElementById('loginEmail').value;
             const password = document.getElementById('loginPassword').value;
             const errorElement = document.getElementById('loginError');
+            const loginBtn = document.getElementById('loginBtn');
+            const loginBtnText = document.getElementById('loginBtnText');
+            const loginLoader = document.getElementById('loginLoader');
             
-            // Mock login validation
-            if (email && password) {
-                const user = {
-                    id: '1',
-                    email: email,
-                    name: email.split('@')[0],
-                    isAdmin: email === 'admin@guntur99store.com'
-                };
-                
-                currentUser = user;
-                localStorage.setItem('guntur99_user', JSON.stringify(user));
-                updateUserUI();
+            // Show loading state
+            loginBtn.disabled = true;
+            loginBtnText.textContent = 'Signing in...';
+            loginLoader.classList.remove('hidden');
+            errorElement.classList.add('hidden');
+            
+            try {
+                await window.firebaseAuth.signInWithEmailAndPassword(auth, email, password);
                 showPage('home');
-                errorElement.classList.add('hidden');
-            } else {
-                errorElement.textContent = 'Please enter valid credentials';
+            } catch (error) {
+                errorElement.textContent = error.message;
                 errorElement.classList.remove('hidden');
+            } finally {
+                // Reset loading state
+                loginBtn.disabled = false;
+                loginBtnText.textContent = 'Sign in';
+                loginLoader.classList.add('hidden');
             }
         }
 
-        function handleRegister(event) {
+        async function handleRegister(event) {
             event.preventDefault();
             
             const name = document.getElementById('registerName').value;
@@ -1177,6 +1473,9 @@
             const password = document.getElementById('registerPassword').value;
             const confirmPassword = document.getElementById('registerConfirmPassword').value;
             const errorElement = document.getElementById('registerError');
+            const registerBtn = document.getElementById('registerBtn');
+            const registerBtnText = document.getElementById('registerBtnText');
+            const registerLoader = document.getElementById('registerLoader');
             
             if (password !== confirmPassword) {
                 errorElement.textContent = 'Passwords do not match';
@@ -1190,33 +1489,41 @@
                 return;
             }
             
-            // Mock registration
-            const user = {
-                id: Date.now().toString(),
-                email: email,
-                name: name,
-                isAdmin: false
-            };
-            
-            currentUser = user;
-            localStorage.setItem('guntur99_user', JSON.stringify(user));
-            updateUserUI();
-            showPage('home');
+            // Show loading state
+            registerBtn.disabled = true;
+            registerBtnText.textContent = 'Creating account...';
+            registerLoader.classList.remove('hidden');
             errorElement.classList.add('hidden');
+            
+            try {
+                const userCredential = await window.firebaseAuth.createUserWithEmailAndPassword(auth, email, password);
+                await window.firebaseAuth.updateProfile(userCredential.user, { displayName: name });
+                
+                // Create user profile in Firestore
+                await window.firestore.setDoc(window.firestore.doc(db, 'users', userCredential.user.uid), {
+                    name: name,
+                    email: email,
+                    createdAt: new Date()
+                });
+                
+                showPage('home');
+            } catch (error) {
+                errorElement.textContent = error.message;
+                errorElement.classList.remove('hidden');
+            } finally {
+                // Reset loading state
+                registerBtn.disabled = false;
+                registerBtnText.textContent = 'Create account';
+                registerLoader.classList.add('hidden');
+            }
         }
 
-        function logout() {
-            currentUser = null;
-            localStorage.removeItem('guntur99_user');
-            updateUserUI();
-            showPage('home');
-        }
-
-        function loadUserFromStorage() {
-            const savedUser = localStorage.getItem('guntur99_user');
-            if (savedUser) {
-                currentUser = JSON.parse(savedUser);
-                updateUserUI();
+        async function logout() {
+            try {
+                await window.firebaseAuth.signOut(auth);
+                showPage('home');
+            } catch (error) {
+                console.error('Error signing out:', error);
             }
         }
 
@@ -1263,11 +1570,12 @@
                 case 'profile':
                     content.innerHTML = `
                         <h2 class="text-2xl font-bold mb-6">Profile Information</h2>
-                        <form class="space-y-6">
+                        <form class="space-y-6" onsubmit="updateProfile(event)">
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700 mb-2">Full Name</label>
                                     <input
+                                        id="profileName"
                                         type="text"
                                         value="${currentUser.name}"
                                         class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -1278,7 +1586,8 @@
                                     <input
                                         type="email"
                                         value="${currentUser.email}"
-                                        class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                        disabled
+                                        class="w-full p-3 border border-gray-300 rounded-lg bg-gray-100"
                                     />
                                 </div>
                             </div>
@@ -1292,24 +1601,73 @@
                     `;
                     break;
                 case 'orders':
-                    content.innerHTML = `
-                        <h2 class="text-2xl font-bold mb-6">Order History</h2>
-                        <div class="text-center py-12">
-                            <i data-lucide="package" class="h-16 w-16 text-gray-400 mx-auto mb-4"></i>
-                            <h3 class="text-lg font-semibold text-gray-900 mb-2">No orders yet</h3>
-                            <p class="text-gray-600">Start shopping to see your orders here</p>
-                        </div>
-                    `;
+                    if (userOrders.length === 0) {
+                        content.innerHTML = `
+                            <h2 class="text-2xl font-bold mb-6">Order History</h2>
+                            <div class="text-center py-12">
+                                <i data-lucide="package" class="h-16 w-16 text-gray-400 mx-auto mb-4"></i>
+                                <h3 class="text-lg font-semibold text-gray-900 mb-2">No orders yet</h3>
+                                <p class="text-gray-600">Start shopping to see your orders here</p>
+                            </div>
+                        `;
+                    } else {
+                        content.innerHTML = `
+                            <h2 class="text-2xl font-bold mb-6">Order History</h2>
+                            <div class="space-y-4">
+                                ${userOrders.map(order => `
+                                    <div class="bg-gray-50 rounded-lg p-6">
+                                        <div class="flex justify-between items-start mb-4">
+                                            <div>
+                                                <h3 class="text-lg font-semibold">Order #${order.id.substring(0, 8)}</h3>
+                                                <p class="text-gray-600">${new Date(order.createdAt.seconds * 1000).toLocaleDateString()}</p>
+                                            </div>
+                                            <span class="px-3 py-1 rounded-full text-sm ${
+                                                order.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                                                order.status === 'shipped' ? 'bg-blue-100 text-blue-800' :
+                                                'bg-green-100 text-green-800'
+                                            }">
+                                                ${order.status.charAt(0).toUpperCase() + order.status.slice(1)}
+                                            </span>
+                                        </div>
+                                        <div class="space-y-2">
+                                            ${order.items.map(item => `
+                                                <div class="flex items-center space-x-3">
+                                                    <img src="${item.product.image}" alt="${item.product.name}" class="w-12 h-12 object-cover rounded">
+                                                    <div class="flex-1">
+                                                        <p class="font-medium">${item.product.name}</p>
+                                                        <p class="text-gray-600">Qty: ${item.quantity}</p>
+                                                    </div>
+                                                    <p class="font-semibold">₹${item.product.price * item.quantity}</p>
+                                                </div>
+                                            `).join('')}
+                                        </div>
+                                        <div class="border-t mt-4 pt-4 text-right">
+                                            <p class="text-lg font-bold">Total: ₹${order.total}</p>
+                                        </div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        `;
+                    }
                     break;
                 case 'wishlist':
-                    content.innerHTML = `
-                        <h2 class="text-2xl font-bold mb-6">Wishlist</h2>
-                        <div class="text-center py-12">
-                            <i data-lucide="heart" class="h-16 w-16 text-gray-400 mx-auto mb-4"></i>
-                            <h3 class="text-lg font-semibold text-gray-900 mb-2">No items in wishlist</h3>
-                            <p class="text-gray-600">Save items you love for later</p>
-                        </div>
-                    `;
+                    if (userWishlist.length === 0) {
+                        content.innerHTML = `
+                            <h2 class="text-2xl font-bold mb-6">Wishlist</h2>
+                            <div class="text-center py-12">
+                                <i data-lucide="heart" class="h-16 w-16 text-gray-400 mx-auto mb-4"></i>
+                                <h3 class="text-lg font-semibold text-gray-900 mb-2">No items in wishlist</h3>
+                                <p class="text-gray-600">Save items you love for later</p>
+                            </div>
+                        `;
+                    } else {
+                        content.innerHTML = `
+                            <h2 class="text-2xl font-bold mb-6">Wishlist</h2>
+                            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                ${userWishlist.map(item => createProductCard(item.product)).join('')}
+                            </div>
+                        `;
+                    }
                     break;
                 case 'addresses':
                     content.innerHTML = `
@@ -1332,6 +1690,50 @@
             lucide.createIcons();
         }
 
+        // Update profile
+        async function updateProfile(event) {
+            event.preventDefault();
+            
+            const newName = document.getElementById('profileName').value;
+            
+            try {
+                await window.firebaseAuth.updateProfile(auth.currentUser, { displayName: newName });
+                await window.firestore.updateDoc(window.firestore.doc(db, 'users', currentUser.uid), {
+                    name: newName,
+                    updatedAt: new Date()
+                });
+                
+                currentUser.name = newName;
+                updateUserUI();
+                document.getElementById('profileUserName').textContent = newName;
+                document.getElementById('userAvatar').textContent = newName.charAt(0).toUpperCase();
+                
+                alert('Profile updated successfully!');
+            } catch (error) {
+                console.error('Error updating profile:', error);
+                alert('Error updating profile. Please try again.');
+            }
+        }
+
+        // Newsletter subscription
+        async function subscribeNewsletter() {
+            const email = document.getElementById('newsletterEmail').value;
+            if (!email) return;
+
+            try {
+                await window.firestore.addDoc(window.firestore.collection(db, 'newsletter'), {
+                    email: email,
+                    subscribedAt: new Date()
+                });
+                
+                document.getElementById('newsletterEmail').value = '';
+                alert('Successfully subscribed to newsletter!');
+            } catch (error) {
+                console.error('Error subscribing to newsletter:', error);
+                alert('Error subscribing. Please try again.');
+            }
+        }
+
         // Utility functions
         function toggleUserMenu() {
             const userMenu = document.getElementById('userMenu');
@@ -1344,12 +1746,23 @@
             mobileMenu.classList.toggle('hidden');
         }
 
-        function handleSearch(event) {
+        async function handleSearch(event) {
             if (event.key === 'Enter') {
-                const query = event.target.value;
+                const query = event.target.value.toLowerCase();
                 if (query.trim()) {
-                    // Implement search functionality
-                    console.log('Searching for:', query);
+                    try {
+                        const products = await loadProducts();
+                        const filteredProducts = products.filter(product => 
+                            product.name.toLowerCase().includes(query) ||
+                            product.description.toLowerCase().includes(query) ||
+                            product.tags.some(tag => tag.toLowerCase().includes(query))
+                        );
+                        
+                        // Display search results (you can create a search results page)
+                        console.log('Search results:', filteredProducts);
+                    } catch (error) {
+                        console.error('Error searching products:', error);
+                    }
                 }
             }
         }
