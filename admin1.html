@@ -28,9 +28,67 @@
         .modal.active {
             display: flex;
         }
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #3498db;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
     </style>
 </head>
 <body class="bg-gray-50">
+    <!-- Firebase SDK -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
+        import { getFirestore, collection, getDocs, addDoc, updateDoc, deleteDoc, doc, query, orderBy, onSnapshot, where, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
+        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
+        import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-analytics.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCtENzgbo12j2fHfraERzFq6LjLisdA2T8",
+            authDomain: "store-d7663.firebaseapp.com",
+            projectId: "store-d7663",
+            storageBucket: "store-d7663.firebasestorage.app",
+            messagingSenderId: "45645072994",
+            appId: "1:45645072994:web:87bf34dff97cdedc67df3b",
+            measurementId: "G-ESDEZ9YKV1"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+        const analytics = getAnalytics(app);
+
+        // Make Firebase available globally
+        window.db = db;
+        window.auth = auth;
+        window.firebaseModules = {
+            collection,
+            getDocs,
+            addDoc,
+            updateDoc,
+            deleteDoc,
+            doc,
+            query,
+            orderBy,
+            onSnapshot,
+            where,
+            serverTimestamp,
+            onAuthStateChanged,
+            signOut
+        };
+
+        // Initialize admin dashboard when Firebase is ready
+        window.initializeAdmin();
+    </script>
+
     <!-- Header -->
     <header class="bg-white shadow-md">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -83,7 +141,9 @@
                     </div>
                     <div class="ml-4">
                         <p class="text-sm text-gray-600">Total Products</p>
-                        <p id="totalProducts" class="text-2xl font-bold text-gray-900">1,234</p>
+                        <p id="totalProducts" class="text-2xl font-bold text-gray-900">
+                            <span class="loading"></span>
+                        </p>
                     </div>
                 </div>
             </div>
@@ -95,7 +155,9 @@
                     </div>
                     <div class="ml-4">
                         <p class="text-sm text-gray-600">Total Orders</p>
-                        <p id="totalOrders" class="text-2xl font-bold text-gray-900">567</p>
+                        <p id="totalOrders" class="text-2xl font-bold text-gray-900">
+                            <span class="loading"></span>
+                        </p>
                     </div>
                 </div>
             </div>
@@ -107,7 +169,9 @@
                     </div>
                     <div class="ml-4">
                         <p class="text-sm text-gray-600">Total Users</p>
-                        <p id="totalUsers" class="text-2xl font-bold text-gray-900">890</p>
+                        <p id="totalUsers" class="text-2xl font-bold text-gray-900">
+                            <span class="loading"></span>
+                        </p>
                     </div>
                 </div>
             </div>
@@ -119,7 +183,9 @@
                     </div>
                     <div class="ml-4">
                         <p class="text-sm text-gray-600">Revenue</p>
-                        <p id="totalRevenue" class="text-2xl font-bold text-gray-900">₹1,23,456</p>
+                        <p id="totalRevenue" class="text-2xl font-bold text-gray-900">
+                            <span class="loading"></span>
+                        </p>
                     </div>
                 </div>
             </div>
@@ -160,7 +226,10 @@
                         <div>
                             <h3 class="text-lg font-semibold mb-4">Recent Orders</h3>
                             <div id="recentOrders" class="space-y-3">
-                                <!-- Recent orders will be populated by JavaScript -->
+                                <div class="text-center py-8">
+                                    <span class="loading"></span>
+                                    <p class="text-gray-500 mt-2">Loading recent orders...</p>
+                                </div>
                             </div>
                         </div>
 
@@ -168,7 +237,10 @@
                         <div>
                             <h3 class="text-lg font-semibold mb-4">Top Products</h3>
                             <div id="topProducts" class="space-y-3">
-                                <!-- Top products will be populated by JavaScript -->
+                                <div class="text-center py-8">
+                                    <span class="loading"></span>
+                                    <p class="text-gray-500 mt-2">Loading top products...</p>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -244,7 +316,12 @@
                                 </tr>
                             </thead>
                             <tbody id="productsTableBody" class="bg-white divide-y divide-gray-200">
-                                <!-- Products will be populated by JavaScript -->
+                                <tr>
+                                    <td colspan="6" class="px-4 py-8 text-center">
+                                        <span class="loading"></span>
+                                        <p class="text-gray-500 mt-2">Loading products...</p>
+                                    </td>
+                                </tr>
                             </tbody>
                         </table>
                     </div>
@@ -266,10 +343,11 @@
                         </div>
                     </div>
 
-                    <div id="ordersContent" class="text-center py-12">
-                        <i data-lucide="shopping-cart" class="h-16 w-16 text-gray-400 mx-auto mb-4"></i>
-                        <h3 class="text-lg font-semibold text-gray-900 mb-2">No orders yet</h3>
-                        <p class="text-gray-600">Orders will appear here when customers make purchases</p>
+                    <div id="ordersContent">
+                        <div class="text-center py-12">
+                            <span class="loading"></span>
+                            <p class="text-gray-500 mt-2">Loading orders...</p>
+                        </div>
                     </div>
                 </div>
 
@@ -285,10 +363,11 @@
                         </div>
                     </div>
 
-                    <div id="usersContent" class="text-center py-12">
-                        <i data-lucide="users" class="h-16 w-16 text-gray-400 mx-auto mb-4"></i>
-                        <h3 class="text-lg font-semibold text-gray-900 mb-2">No users registered</h3>
-                        <p class="text-gray-600">User accounts will appear here</p>
+                    <div id="usersContent">
+                        <div class="text-center py-12">
+                            <span class="loading"></span>
+                            <p class="text-gray-500 mt-2">Loading users...</p>
+                        </div>
                     </div>
                 </div>
 
@@ -302,7 +381,7 @@
                             <div class="flex items-center justify-between">
                                 <div>
                                     <p class="text-blue-100">Sales Today</p>
-                                    <p class="text-2xl font-bold">₹12,345</p>
+                                    <p id="salesToday" class="text-2xl font-bold">₹0</p>
                                 </div>
                                 <i data-lucide="trending-up" class="h-8 w-8 text-blue-200"></i>
                             </div>
@@ -312,7 +391,7 @@
                             <div class="flex items-center justify-between">
                                 <div>
                                     <p class="text-green-100">Orders Today</p>
-                                    <p class="text-2xl font-bold">23</p>
+                                    <p id="ordersToday" class="text-2xl font-bold">0</p>
                                 </div>
                                 <i data-lucide="shopping-bag" class="h-8 w-8 text-green-200"></i>
                             </div>
@@ -322,7 +401,7 @@
                             <div class="flex items-center justify-between">
                                 <div>
                                     <p class="text-purple-100">New Users</p>
-                                    <p class="text-2xl font-bold">8</p>
+                                    <p id="newUsersToday" class="text-2xl font-bold">0</p>
                                 </div>
                                 <i data-lucide="user-plus" class="h-8 w-8 text-purple-200"></i>
                             </div>
@@ -372,7 +451,12 @@
                                     </tr>
                                 </thead>
                                 <tbody id="couponsTableBody" class="bg-white divide-y divide-gray-200">
-                                    <!-- Coupons will be populated by JavaScript -->
+                                    <tr>
+                                        <td colspan="7" class="px-4 py-8 text-center">
+                                            <span class="loading"></span>
+                                            <p class="text-gray-500 mt-2">Loading coupons...</p>
+                                        </td>
+                                    </tr>
                                 </tbody>
                             </table>
                         </div>
@@ -451,7 +535,8 @@
                         Cancel
                     </button>
                     <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
-                        Add Product
+                        <span id="addProductBtnText">Add Product</span>
+                        <span id="addProductLoader" class="loading hidden"></span>
                     </button>
                 </div>
             </form>
@@ -503,7 +588,8 @@
                         Cancel
                     </button>
                     <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
-                        Create Coupon
+                        <span id="addCouponBtnText">Create Coupon</span>
+                        <span id="addCouponLoader" class="loading hidden"></span>
                     </button>
                 </div>
             </form>
@@ -511,93 +597,166 @@
     </div>
 
     <script>
-        // Sample data
-        const sampleProducts = [
-            {
-                id: '1',
-                name: 'Wireless Bluetooth Headphones',
-                price: 2999,
-                originalPrice: 3999,
-                image: 'https://images.pexels.com/photos/3587478/pexels-photo-3587478.jpeg?auto=compress&cs=tinysrgb&w=500',
-                category: 'Electronics',
-                description: 'High-quality wireless Bluetooth headphones with noise cancellation and 30-hour battery life.',
-                rating: 4.5,
-                reviewCount: 128,
-                inStock: true,
-                featured: true
-            },
-            {
-                id: '2',
-                name: 'Smart Watch Series 7',
-                price: 15999,
-                originalPrice: 19999,
-                image: 'https://images.pexels.com/photos/393047/pexels-photo-393047.jpeg?auto=compress&cs=tinysrgb&w=500',
-                category: 'Electronics',
-                description: 'Advanced smartwatch with health monitoring, GPS, and 5-day battery life.',
-                rating: 4.7,
-                reviewCount: 89,
-                inStock: true,
-                featured: true
-            },
-            {
-                id: '3',
-                name: 'Casual Cotton T-Shirt',
-                price: 899,
-                originalPrice: 1299,
-                image: 'https://images.pexels.com/photos/1183266/pexels-photo-1183266.jpeg?auto=compress&cs=tinysrgb&w=500',
-                category: 'Clothing',
-                description: 'Comfortable 100% cotton t-shirt available in multiple colors and sizes.',
-                rating: 4.2,
-                reviewCount: 45,
-                inStock: true,
-                featured: false
-            },
-            {
-                id: '4',
-                name: 'Coffee Maker Deluxe',
-                price: 8999,
-                originalPrice: 12999,
-                image: 'https://images.pexels.com/photos/324028/pexels-photo-324028.jpeg?auto=compress&cs=tinysrgb&w=500',
-                category: 'Home & Kitchen',
-                description: 'Premium coffee maker with programmable brewing and thermal carafe.',
-                rating: 4.6,
-                reviewCount: 67,
-                inStock: true,
-                featured: true
-            }
-        ];
-
-        let products = [...sampleProducts];
-        let coupons = [
-            {
-                id: '1',
-                code: 'WELCOME10',
-                discount: 10,
-                type: 'percentage',
-                minAmount: 500,
-                expiresAt: new Date('2024-12-31'),
-                active: true
-            },
-            {
-                id: '2',
-                code: 'SAVE100',
-                discount: 100,
-                type: 'fixed',
-                minAmount: 1000,
-                expiresAt: new Date('2024-11-30'),
-                active: true
-            }
-        ];
-
+        // Global variables
+        let products = [];
+        let orders = [];
+        let users = [];
+        let coupons = [];
         let currentTab = 'overview';
+        let currentUser = null;
 
-        // Initialize the admin dashboard
-        document.addEventListener('DOMContentLoaded', function() {
+        // Initialize admin dashboard
+        window.initializeAdmin = function() {
             lucide.createIcons();
-            loadOverviewData();
-            loadProductsTable();
-            loadCouponsTable();
-        });
+            
+            // Check authentication
+            window.firebaseModules.onAuthStateChanged(window.auth, (user) => {
+                if (user) {
+                    currentUser = user;
+                    document.getElementById('adminName').textContent = user.email.split('@')[0];
+                    loadDashboardData();
+                } else {
+                    // Redirect to login if not authenticated
+                    window.location.href = 'index.html';
+                }
+            });
+        };
+
+        // Load all dashboard data
+        async function loadDashboardData() {
+            try {
+                await Promise.all([
+                    loadProducts(),
+                    loadOrders(),
+                    loadUsers(),
+                    loadCoupons(),
+                    loadStats()
+                ]);
+                
+                loadOverviewData();
+            } catch (error) {
+                console.error('Error loading dashboard data:', error);
+            }
+        }
+
+        // Load products from Firebase
+        async function loadProducts() {
+            try {
+                const { collection, getDocs, query, orderBy } = window.firebaseModules;
+                const productsQuery = query(collection(window.db, 'products'), orderBy('createdAt', 'desc'));
+                const snapshot = await getDocs(productsQuery);
+                
+                products = [];
+                snapshot.forEach((doc) => {
+                    products.push({ id: doc.id, ...doc.data() });
+                });
+                
+                loadProductsTable();
+            } catch (error) {
+                console.error('Error loading products:', error);
+                products = [];
+            }
+        }
+
+        // Load orders from Firebase
+        async function loadOrders() {
+            try {
+                const { collection, getDocs, query, orderBy } = window.firebaseModules;
+                const ordersQuery = query(collection(window.db, 'orders'), orderBy('createdAt', 'desc'));
+                const snapshot = await getDocs(ordersQuery);
+                
+                orders = [];
+                snapshot.forEach((doc) => {
+                    orders.push({ id: doc.id, ...doc.data() });
+                });
+                
+                loadOrdersTable();
+            } catch (error) {
+                console.error('Error loading orders:', error);
+                orders = [];
+            }
+        }
+
+        // Load users from Firebase
+        async function loadUsers() {
+            try {
+                const { collection, getDocs } = window.firebaseModules;
+                const snapshot = await getDocs(collection(window.db, 'users'));
+                
+                users = [];
+                snapshot.forEach((doc) => {
+                    users.push({ id: doc.id, ...doc.data() });
+                });
+                
+                loadUsersTable();
+            } catch (error) {
+                console.error('Error loading users:', error);
+                users = [];
+            }
+        }
+
+        // Load coupons from Firebase
+        async function loadCoupons() {
+            try {
+                const { collection, getDocs } = window.firebaseModules;
+                const snapshot = await getDocs(collection(window.db, 'coupons'));
+                
+                coupons = [];
+                snapshot.forEach((doc) => {
+                    const data = doc.data();
+                    coupons.push({ 
+                        id: doc.id, 
+                        ...data,
+                        expiresAt: data.expiresAt?.toDate() || new Date(data.expiresAt)
+                    });
+                });
+                
+                loadCouponsTable();
+            } catch (error) {
+                console.error('Error loading coupons:', error);
+                coupons = [];
+            }
+        }
+
+        // Load statistics
+        async function loadStats() {
+            try {
+                // Calculate stats
+                const totalProducts = products.length;
+                const totalOrders = orders.length;
+                const totalUsers = users.length;
+                const totalRevenue = orders.reduce((sum, order) => sum + (order.total || 0), 0);
+
+                // Update stats display
+                document.getElementById('totalProducts').textContent = totalProducts;
+                document.getElementById('totalOrders').textContent = totalOrders;
+                document.getElementById('totalUsers').textContent = totalUsers;
+                document.getElementById('totalRevenue').textContent = `₹${totalRevenue.toLocaleString()}`;
+
+                // Today's stats
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                
+                const todayOrders = orders.filter(order => {
+                    const orderDate = order.createdAt?.toDate() || new Date(order.createdAt);
+                    return orderDate >= today;
+                });
+                
+                const todayUsers = users.filter(user => {
+                    const userDate = user.createdAt?.toDate() || new Date(user.createdAt);
+                    return userDate >= today;
+                });
+
+                const salesToday = todayOrders.reduce((sum, order) => sum + (order.total || 0), 0);
+
+                document.getElementById('salesToday').textContent = `₹${salesToday.toLocaleString()}`;
+                document.getElementById('ordersToday').textContent = todayOrders.length;
+                document.getElementById('newUsersToday').textContent = todayUsers.length;
+
+            } catch (error) {
+                console.error('Error loading stats:', error);
+            }
+        }
 
         // Tab management
         function showTab(tabName) {
@@ -628,6 +787,12 @@
                 case 'products':
                     loadProductsTable();
                     break;
+                case 'orders':
+                    loadOrdersTable();
+                    break;
+                case 'users':
+                    loadUsersTable();
+                    break;
                 case 'coupons':
                     loadCouponsTable();
                     break;
@@ -638,70 +803,214 @@
         function loadOverviewData() {
             // Load recent orders
             const recentOrders = document.getElementById('recentOrders');
-            recentOrders.innerHTML = Array.from({length: 5}, (_, i) => `
-                <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                    <div>
-                        <p class="font-medium">Order #${1000 + i + 1}</p>
-                        <p class="text-sm text-gray-600">Customer ${i + 1}</p>
+            if (orders.length === 0) {
+                recentOrders.innerHTML = `
+                    <div class="text-center py-8">
+                        <i data-lucide="shopping-cart" class="h-12 w-12 text-gray-400 mx-auto mb-2"></i>
+                        <p class="text-gray-500">No orders yet</p>
                     </div>
-                    <div class="text-right">
-                        <p class="font-medium">₹${((i + 1) * 1234).toLocaleString()}</p>
-                        <p class="text-sm text-green-600">Completed</p>
+                `;
+            } else {
+                recentOrders.innerHTML = orders.slice(0, 5).map(order => `
+                    <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                        <div>
+                            <p class="font-medium">Order #${order.id.substring(0, 8)}</p>
+                            <p class="text-sm text-gray-600">${order.userEmail || 'Guest'}</p>
+                        </div>
+                        <div class="text-right">
+                            <p class="font-medium">₹${(order.total || 0).toLocaleString()}</p>
+                            <p class="text-sm text-green-600">${order.status || 'Pending'}</p>
+                        </div>
                     </div>
-                </div>
-            `).join('');
+                `).join('');
+            }
 
             // Load top products
             const topProducts = document.getElementById('topProducts');
-            topProducts.innerHTML = products.slice(0, 5).map(product => `
-                <div class="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
-                    <img src="${product.image}" alt="${product.name}" class="w-12 h-12 object-cover rounded" />
-                    <div class="flex-1">
-                        <p class="font-medium">${product.name}</p>
-                        <p class="text-sm text-gray-600">₹${product.price}</p>
+            if (products.length === 0) {
+                topProducts.innerHTML = `
+                    <div class="text-center py-8">
+                        <i data-lucide="package" class="h-12 w-12 text-gray-400 mx-auto mb-2"></i>
+                        <p class="text-gray-500">No products yet</p>
                     </div>
-                    <div class="text-right">
-                        <p class="text-sm text-gray-600">${product.reviewCount} sold</p>
+                `;
+            } else {
+                topProducts.innerHTML = products.slice(0, 5).map(product => `
+                    <div class="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
+                        <img src="${product.image}" alt="${product.name}" class="w-12 h-12 object-cover rounded" />
+                        <div class="flex-1">
+                            <p class="font-medium">${product.name}</p>
+                            <p class="text-sm text-gray-600">₹${product.price}</p>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-sm text-gray-600">${product.reviewCount || 0} reviews</p>
+                        </div>
                     </div>
-                </div>
-            `).join('');
+                `).join('');
+            }
+
+            lucide.createIcons();
         }
 
         // Load products table
         function loadProductsTable() {
             const tbody = document.getElementById('productsTableBody');
-            tbody.innerHTML = products.map(product => `
-                <tr>
-                    <td class="px-4 py-4 whitespace-nowrap">
-                        <div class="flex items-center">
-                            <img src="${product.image}" alt="${product.name}" class="w-10 h-10 object-cover rounded" />
-                            <div class="ml-4">
-                                <p class="text-sm font-medium text-gray-900">${product.name}</p>
+            
+            if (products.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="6" class="px-4 py-8 text-center">
+                            <i data-lucide="package" class="h-12 w-12 text-gray-400 mx-auto mb-2"></i>
+                            <p class="text-gray-500">No products found</p>
+                        </td>
+                    </tr>
+                `;
+            } else {
+                tbody.innerHTML = products.map(product => `
+                    <tr>
+                        <td class="px-4 py-4 whitespace-nowrap">
+                            <div class="flex items-center">
+                                <img src="${product.image}" alt="${product.name}" class="w-10 h-10 object-cover rounded" />
+                                <div class="ml-4">
+                                    <p class="text-sm font-medium text-gray-900">${product.name}</p>
+                                </div>
                             </div>
-                        </div>
-                    </td>
-                    <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500">${product.category}</td>
-                    <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">₹${product.price}</td>
-                    <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">In Stock</td>
-                    <td class="px-4 py-4 whitespace-nowrap">
-                        <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                            product.inStock ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                        }">
-                            ${product.inStock ? 'Active' : 'Inactive'}
-                        </span>
-                    </td>
-                    <td class="px-4 py-4 whitespace-nowrap text-sm font-medium">
-                        <div class="flex space-x-2">
-                            <button onclick="editProduct('${product.id}')" class="text-blue-600 hover:text-blue-700">
-                                <i data-lucide="edit" class="h-4 w-4"></i>
-                            </button>
-                            <button onclick="deleteProduct('${product.id}')" class="text-red-600 hover:text-red-700">
-                                <i data-lucide="trash-2" class="h-4 w-4"></i>
-                            </button>
-                        </div>
-                    </td>
-                </tr>
-            `).join('');
+                        </td>
+                        <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500">${product.category}</td>
+                        <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">₹${product.price}</td>
+                        <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">${product.inStock ? 'In Stock' : 'Out of Stock'}</td>
+                        <td class="px-4 py-4 whitespace-nowrap">
+                            <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                                product.inStock ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                            }">
+                                ${product.inStock ? 'Active' : 'Inactive'}
+                            </span>
+                        </td>
+                        <td class="px-4 py-4 whitespace-nowrap text-sm font-medium">
+                            <div class="flex space-x-2">
+                                <button onclick="editProduct('${product.id}')" class="text-blue-600 hover:text-blue-700">
+                                    <i data-lucide="edit" class="h-4 w-4"></i>
+                                </button>
+                                <button onclick="deleteProduct('${product.id}')" class="text-red-600 hover:text-red-700">
+                                    <i data-lucide="trash-2" class="h-4 w-4"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `).join('');
+            }
+            
+            lucide.createIcons();
+        }
+
+        // Load orders table
+        function loadOrdersTable() {
+            const ordersContent = document.getElementById('ordersContent');
+            
+            if (orders.length === 0) {
+                ordersContent.innerHTML = `
+                    <div class="text-center py-12">
+                        <i data-lucide="shopping-cart" class="h-16 w-16 text-gray-400 mx-auto mb-4"></i>
+                        <h3 class="text-lg font-semibold text-gray-900 mb-2">No orders yet</h3>
+                        <p class="text-gray-600">Orders will appear here when customers make purchases</p>
+                    </div>
+                `;
+            } else {
+                ordersContent.innerHTML = `
+                    <div class="overflow-x-auto">
+                        <table class="w-full table-auto">
+                            <thead>
+                                <tr class="bg-gray-50">
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Order ID</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Customer</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200">
+                                ${orders.map(order => `
+                                    <tr>
+                                        <td class="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-900">#${order.id.substring(0, 8)}</td>
+                                        <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500">${order.userEmail || 'Guest'}</td>
+                                        <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">₹${(order.total || 0).toLocaleString()}</td>
+                                        <td class="px-4 py-4 whitespace-nowrap">
+                                            <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800">
+                                                ${order.status || 'Pending'}
+                                            </span>
+                                        </td>
+                                        <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
+                                            ${order.createdAt ? new Date(order.createdAt.seconds * 1000).toLocaleDateString() : 'N/A'}
+                                        </td>
+                                        <td class="px-4 py-4 whitespace-nowrap text-sm font-medium">
+                                            <button onclick="viewOrder('${order.id}')" class="text-blue-600 hover:text-blue-700 mr-2">
+                                                <i data-lucide="eye" class="h-4 w-4"></i>
+                                            </button>
+                                            <button onclick="updateOrderStatus('${order.id}')" class="text-green-600 hover:text-green-700">
+                                                <i data-lucide="edit" class="h-4 w-4"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                `;
+            }
+            
+            lucide.createIcons();
+        }
+
+        // Load users table
+        function loadUsersTable() {
+            const usersContent = document.getElementById('usersContent');
+            
+            if (users.length === 0) {
+                usersContent.innerHTML = `
+                    <div class="text-center py-12">
+                        <i data-lucide="users" class="h-16 w-16 text-gray-400 mx-auto mb-4"></i>
+                        <h3 class="text-lg font-semibold text-gray-900 mb-2">No users registered</h3>
+                        <p class="text-gray-600">User accounts will appear here</p>
+                    </div>
+                `;
+            } else {
+                usersContent.innerHTML = `
+                    <div class="overflow-x-auto">
+                        <table class="w-full table-auto">
+                            <thead>
+                                <tr class="bg-gray-50">
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Joined</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Orders</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200">
+                                ${users.map(user => {
+                                    const userOrders = orders.filter(order => order.userId === user.id);
+                                    return `
+                                        <tr>
+                                            <td class="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${user.name || 'N/A'}</td>
+                                            <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500">${user.email}</td>
+                                            <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
+                                                ${user.createdAt ? new Date(user.createdAt.seconds * 1000).toLocaleDateString() : 'N/A'}
+                                            </td>
+                                            <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">${userOrders.length}</td>
+                                            <td class="px-4 py-4 whitespace-nowrap text-sm font-medium">
+                                                <button onclick="viewUser('${user.id}')" class="text-blue-600 hover:text-blue-700">
+                                                    <i data-lucide="eye" class="h-4 w-4"></i>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    `;
+                                }).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                `;
+            }
             
             lucide.createIcons();
         }
@@ -709,38 +1018,50 @@
         // Load coupons table
         function loadCouponsTable() {
             const tbody = document.getElementById('couponsTableBody');
-            tbody.innerHTML = coupons.map(coupon => `
-                <tr>
-                    <td class="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${coupon.code}</td>
-                    <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
-                        ${coupon.type === 'percentage' ? coupon.discount + '%' : '₹' + coupon.discount}
-                    </td>
-                    <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
-                        ${coupon.type === 'percentage' ? 'Percentage' : 'Fixed Amount'}
-                    </td>
-                    <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">₹${coupon.minAmount}</td>
-                    <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
-                        ${coupon.expiresAt.toLocaleDateString()}
-                    </td>
-                    <td class="px-4 py-4 whitespace-nowrap">
-                        <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                            coupon.active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                        }">
-                            ${coupon.active ? 'Active' : 'Inactive'}
-                        </span>
-                    </td>
-                    <td class="px-4 py-4 whitespace-nowrap text-sm font-medium">
-                        <div class="flex space-x-2">
-                            <button onclick="toggleCoupon('${coupon.id}')" class="text-blue-600 hover:text-blue-700">
-                                <i data-lucide="toggle-left" class="h-4 w-4"></i>
-                            </button>
-                            <button onclick="deleteCoupon('${coupon.id}')" class="text-red-600 hover:text-red-700">
-                                <i data-lucide="trash-2" class="h-4 w-4"></i>
-                            </button>
-                        </div>
-                    </td>
-                </tr>
-            `).join('');
+            
+            if (coupons.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="7" class="px-4 py-8 text-center">
+                            <i data-lucide="tag" class="h-12 w-12 text-gray-400 mx-auto mb-2"></i>
+                            <p class="text-gray-500">No coupons found</p>
+                        </td>
+                    </tr>
+                `;
+            } else {
+                tbody.innerHTML = coupons.map(coupon => `
+                    <tr>
+                        <td class="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${coupon.code}</td>
+                        <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
+                            ${coupon.type === 'percentage' ? coupon.discount + '%' : '₹' + coupon.discount}
+                        </td>
+                        <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
+                            ${coupon.type === 'percentage' ? 'Percentage' : 'Fixed Amount'}
+                        </td>
+                        <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">₹${coupon.minAmount}</td>
+                        <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
+                            ${coupon.expiresAt.toLocaleDateString()}
+                        </td>
+                        <td class="px-4 py-4 whitespace-nowrap">
+                            <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                                coupon.active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                            }">
+                                ${coupon.active ? 'Active' : 'Inactive'}
+                            </span>
+                        </td>
+                        <td class="px-4 py-4 whitespace-nowrap text-sm font-medium">
+                            <div class="flex space-x-2">
+                                <button onclick="toggleCoupon('${coupon.id}')" class="text-blue-600 hover:text-blue-700">
+                                    <i data-lucide="toggle-left" class="h-4 w-4"></i>
+                                </button>
+                                <button onclick="deleteCoupon('${coupon.id}')" class="text-red-600 hover:text-red-700">
+                                    <i data-lucide="trash-2" class="h-4 w-4"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `).join('');
+            }
             
             lucide.createIcons();
         }
@@ -759,96 +1080,145 @@
         }
 
         // Product management
-        function handleAddProduct(event) {
+        async function handleAddProduct(event) {
             event.preventDefault();
             
-            const newProduct = {
-                id: Date.now().toString(),
-                name: document.getElementById('productName').value,
-                category: document.getElementById('productCategory').value,
-                price: parseInt(document.getElementById('productPrice').value),
-                originalPrice: document.getElementById('productOriginalPrice').value ? 
-                    parseInt(document.getElementById('productOriginalPrice').value) : null,
-                description: document.getElementById('productDescription').value,
-                image: document.getElementById('productImage').value,
-                inStock: document.getElementById('productInStock').checked,
-                featured: document.getElementById('productFeatured').checked,
-                rating: 4.0,
-                reviewCount: 0
-            };
+            const btnText = document.getElementById('addProductBtnText');
+            const loader = document.getElementById('addProductLoader');
             
-            products.push(newProduct);
-            loadProductsTable();
-            closeModal('addProductModal');
+            btnText.classList.add('hidden');
+            loader.classList.remove('hidden');
             
-            // Reset form
-            document.getElementById('addProductForm').reset();
-            
-            alert('Product added successfully!');
-        }
-
-        function editProduct(productId) {
-            const product = products.find(p => p.id === productId);
-            if (product) {
-                // Populate form with product data
-                document.getElementById('productName').value = product.name;
-                document.getElementById('productCategory').value = product.category;
-                document.getElementById('productPrice').value = product.price;
-                document.getElementById('productOriginalPrice').value = product.originalPrice || '';
-                document.getElementById('productDescription').value = product.description;
-                document.getElementById('productImage').value = product.image;
-                document.getElementById('productInStock').checked = product.inStock;
-                document.getElementById('productFeatured').checked = product.featured;
+            try {
+                const { collection, addDoc, serverTimestamp } = window.firebaseModules;
                 
-                showAddProductModal();
+                const newProduct = {
+                    name: document.getElementById('productName').value,
+                    category: document.getElementById('productCategory').value,
+                    price: parseInt(document.getElementById('productPrice').value),
+                    originalPrice: document.getElementById('productOriginalPrice').value ? 
+                        parseInt(document.getElementById('productOriginalPrice').value) : null,
+                    description: document.getElementById('productDescription').value,
+                    image: document.getElementById('productImage').value,
+                    images: [document.getElementById('productImage').value],
+                    inStock: document.getElementById('productInStock').checked,
+                    featured: document.getElementById('productFeatured').checked,
+                    rating: 4.0,
+                    reviewCount: 0,
+                    tags: [],
+                    createdAt: serverTimestamp()
+                };
+                
+                await addDoc(collection(window.db, 'products'), newProduct);
+                
+                closeModal('addProductModal');
+                document.getElementById('addProductForm').reset();
+                
+                // Reload products
+                await loadProducts();
+                
+                alert('Product added successfully!');
+                
+            } catch (error) {
+                console.error('Error adding product:', error);
+                alert('Error adding product. Please try again.');
+            } finally {
+                btnText.classList.remove('hidden');
+                loader.classList.add('hidden');
             }
         }
 
-        function deleteProduct(productId) {
+        async function deleteProduct(productId) {
             if (confirm('Are you sure you want to delete this product?')) {
-                products = products.filter(p => p.id !== productId);
-                loadProductsTable();
-                alert('Product deleted successfully!');
+                try {
+                    const { doc, deleteDoc } = window.firebaseModules;
+                    await deleteDoc(doc(window.db, 'products', productId));
+                    
+                    // Reload products
+                    await loadProducts();
+                    
+                    alert('Product deleted successfully!');
+                } catch (error) {
+                    console.error('Error deleting product:', error);
+                    alert('Error deleting product. Please try again.');
+                }
             }
         }
 
         // Coupon management
-        function handleAddCoupon(event) {
+        async function handleAddCoupon(event) {
             event.preventDefault();
             
-            const newCoupon = {
-                id: Date.now().toString(),
-                code: document.getElementById('couponCode').value,
-                discount: parseInt(document.getElementById('couponDiscount').value),
-                type: document.getElementById('couponType').value,
-                minAmount: parseInt(document.getElementById('couponMinAmount').value),
-                expiresAt: new Date(document.getElementById('couponExpiry').value),
-                active: true
-            };
+            const btnText = document.getElementById('addCouponBtnText');
+            const loader = document.getElementById('addCouponLoader');
             
-            coupons.push(newCoupon);
-            loadCouponsTable();
-            closeModal('addCouponModal');
+            btnText.classList.add('hidden');
+            loader.classList.remove('hidden');
             
-            // Reset form
-            document.getElementById('addCouponForm').reset();
-            
-            alert('Coupon created successfully!');
-        }
-
-        function toggleCoupon(couponId) {
-            const coupon = coupons.find(c => c.id === couponId);
-            if (coupon) {
-                coupon.active = !coupon.active;
-                loadCouponsTable();
+            try {
+                const { collection, addDoc } = window.firebaseModules;
+                
+                const newCoupon = {
+                    code: document.getElementById('couponCode').value.toUpperCase(),
+                    discount: parseInt(document.getElementById('couponDiscount').value),
+                    type: document.getElementById('couponType').value,
+                    minAmount: parseInt(document.getElementById('couponMinAmount').value),
+                    expiresAt: new Date(document.getElementById('couponExpiry').value),
+                    active: true,
+                    usedCount: 0
+                };
+                
+                await addDoc(collection(window.db, 'coupons'), newCoupon);
+                
+                closeModal('addCouponModal');
+                document.getElementById('addCouponForm').reset();
+                
+                // Reload coupons
+                await loadCoupons();
+                
+                alert('Coupon created successfully!');
+                
+            } catch (error) {
+                console.error('Error creating coupon:', error);
+                alert('Error creating coupon. Please try again.');
+            } finally {
+                btnText.classList.remove('hidden');
+                loader.classList.add('hidden');
             }
         }
 
-        function deleteCoupon(couponId) {
+        async function toggleCoupon(couponId) {
+            try {
+                const { doc, updateDoc } = window.firebaseModules;
+                const coupon = coupons.find(c => c.id === couponId);
+                
+                await updateDoc(doc(window.db, 'coupons', couponId), {
+                    active: !coupon.active
+                });
+                
+                // Reload coupons
+                await loadCoupons();
+                
+            } catch (error) {
+                console.error('Error toggling coupon:', error);
+                alert('Error updating coupon. Please try again.');
+            }
+        }
+
+        async function deleteCoupon(couponId) {
             if (confirm('Are you sure you want to delete this coupon?')) {
-                coupons = coupons.filter(c => c.id !== couponId);
-                loadCouponsTable();
-                alert('Coupon deleted successfully!');
+                try {
+                    const { doc, deleteDoc } = window.firebaseModules;
+                    await deleteDoc(doc(window.db, 'coupons', couponId));
+                    
+                    // Reload coupons
+                    await loadCoupons();
+                    
+                    alert('Coupon deleted successfully!');
+                } catch (error) {
+                    console.error('Error deleting coupon:', error);
+                    alert('Error deleting coupon. Please try again.');
+                }
             }
         }
 
@@ -884,7 +1254,7 @@
                     </td>
                     <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500">${product.category}</td>
                     <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">₹${product.price}</td>
-                    <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">In Stock</td>
+                    <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">${product.inStock ? 'In Stock' : 'Out of Stock'}</td>
                     <td class="px-4 py-4 whitespace-nowrap">
                         <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
                             product.inStock ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
@@ -909,8 +1279,16 @@
         }
 
         function filterOrders() {
-            // Implement order filtering
-            console.log('Filter orders');
+            const statusFilter = document.getElementById('orderStatusFilter').value;
+            
+            let filtered = orders;
+            
+            if (statusFilter) {
+                filtered = filtered.filter(order => order.status === statusFilter);
+            }
+            
+            // Update orders display
+            loadOrdersTable();
         }
 
         // Utility functions
@@ -924,18 +1302,73 @@
             alert('Settings panel would open here');
         }
 
-        function adminLogout() {
+        async function adminLogout() {
             if (confirm('Are you sure you want to logout?')) {
-                window.location.href = 'index.html';
+                try {
+                    await window.firebaseModules.signOut(window.auth);
+                    window.location.href = 'index.html';
+                } catch (error) {
+                    console.error('Error signing out:', error);
+                }
             }
         }
 
         function exportData() {
-            alert('Data export functionality would be implemented here');
+            const data = {
+                products,
+                orders,
+                users,
+                coupons,
+                exportDate: new Date().toISOString()
+            };
+            
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `guntur99store-data-${new Date().toISOString().split('T')[0]}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
         }
 
         function exportUsers() {
-            alert('User export functionality would be implemented here');
+            const csvContent = [
+                ['Name', 'Email', 'Joined Date', 'Orders Count'],
+                ...users.map(user => [
+                    user.name || 'N/A',
+                    user.email,
+                    user.createdAt ? new Date(user.createdAt.seconds * 1000).toLocaleDateString() : 'N/A',
+                    orders.filter(order => order.userId === user.id).length
+                ])
+            ].map(row => row.join(',')).join('\n');
+            
+            const blob = new Blob([csvContent], { type: 'text/csv' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `users-${new Date().toISOString().split('T')[0]}.csv`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        function editProduct(productId) {
+            alert('Edit product functionality would open a modal with product details');
+        }
+
+        function viewOrder(orderId) {
+            alert('View order details functionality would open a modal with order information');
+        }
+
+        function updateOrderStatus(orderId) {
+            alert('Update order status functionality would open a modal to change order status');
+        }
+
+        function viewUser(userId) {
+            alert('View user details functionality would open a modal with user information');
         }
 
         // Close dropdowns when clicking outside
